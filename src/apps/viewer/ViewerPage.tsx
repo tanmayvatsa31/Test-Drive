@@ -1,22 +1,25 @@
 import { DeviceFrame } from "../../components/DeviceFrame";
 import { APP_URLS } from "../../ackodrive/appUrls";
 import { embedAppUrl } from "../../ackodrive/embedMode";
+import { isGitHubPagesDeploy } from "../../ackodrive/AppRouter";
+
+const adminLoginPath = isGitHubPagesDeploy() ? "#/login" : "/login";
 
 const PANELS = [
   {
     id: "customer",
     label: "Customer",
-    src: embedAppUrl(APP_URLS.customer, "/"),
+    src: embedAppUrl(APP_URLS.customer),
   },
   {
     id: "driver",
     label: "Driver",
-    src: embedAppUrl(APP_URLS.driver, "/"),
+    src: embedAppUrl(APP_URLS.driver),
   },
   {
     id: "admin",
     label: "Superadmin",
-    src: embedAppUrl(APP_URLS.admin, "/login"),
+    src: embedAppUrl(APP_URLS.admin, adminLoginPath),
   },
 ] as const;
 

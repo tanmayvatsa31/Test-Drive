@@ -11,9 +11,18 @@ export function applyEmbedDocumentClass(): void {
 }
 
 export function embedAppUrl(base: string, path = ""): string {
-  const normalized = base.replace(/\/$/, "");
-  const suffix = path.startsWith("/") ? path : path ? `/${path}` : "";
-  const url = new URL(`${normalized}${suffix}`);
+  if (path.startsWith("#")) {
+    const [baseWithoutQuery, query = ""] = base.split("?");
+    const params = new URLSearchParams(query);
+    params.set("embed", "1");
+    return `${baseWithoutQuery}?${params.toString()}${path}`;
+  }
+
+  const url = new URL(base, typeof window !== "undefined" ? window.location.origin : undefined);
+  if (path) {
+    const suffix = path.startsWith("/") ? path : `/${path}`;
+    url.pathname = `${url.pathname.replace(/\/$/, "")}${suffix}`;
+  }
   url.searchParams.set("embed", "1");
   return url.toString();
 }

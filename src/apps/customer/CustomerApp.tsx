@@ -1,11 +1,12 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AppRouter } from "../../ackodrive/AppRouter";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { CustomerPage } from "../../ackodrive/pages/CustomerPage";
 import { CustomerLandingPage } from "./CustomerLandingPage";
 import { CustomerCarsPage } from "./CustomerCarsPage";
 
 export function CustomerApp() {
   return (
-    <BrowserRouter>
+    <AppRouter>
       <Routes>
         <Route path="/" element={<CustomerLandingPage />} />
         <Route path="/cars" element={<CustomerCarsPage />} />
@@ -13,6 +14,6 @@ export function CustomerApp() {
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </AppRouter>
   );
 }

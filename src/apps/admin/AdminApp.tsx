@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AppRouter } from "../../ackodrive/AppRouter";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { DealerPage } from "../../ackodrive/pages/DealerPage";
 import { MasterPage } from "../../ackodrive/pages/MasterPage";
 import { AdminLoginPage } from "./AdminLoginPage";
@@ -9,7 +10,7 @@ import { RoleEmailLoginPage } from "./RoleEmailLoginPage";
 
 export function AdminApp() {
   return (
-    <BrowserRouter>
+    <AppRouter>
       <Routes>
         <Route path="/login" element={<AdminLoginPage />} />
         <Route
@@ -42,6 +43,6 @@ export function AdminApp() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </AppRouter>
   );
 }

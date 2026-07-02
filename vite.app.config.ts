@@ -21,8 +21,12 @@ const ENTRIES: Record<AppTarget, string> = {
 };
 
 const ENTRY = ENTRIES[TARGET];
-
 const PORT = PORTS[TARGET];
+
+const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
+const pagesBase =
+  process.env.VITE_BASE_PATH ??
+  (process.env.GITHUB_ACTIONS && repoName ? `/${repoName}/` : "/");
 
 /** Serve the app entry at `/` and for client-side routes (e.g. `/app`, `/dealer`). */
 function spaFallback(entry: string): Plugin {
@@ -56,6 +60,7 @@ function spaFallback(entry: string): Plugin {
 }
 
 export default defineConfig({
+  base: pagesBase,
   plugins: [react(), tailwindcss(), spaFallback(ENTRY)],
   define: {
     "import.meta.env.VITE_APP_TARGET": JSON.stringify(TARGET),
