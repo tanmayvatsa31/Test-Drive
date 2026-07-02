@@ -1,0 +1,581 @@
+@import "tailwindcss";
+@import "./ackodrive/theme.css";
+
+@font-face {
+  font-family: "Euclid Circular B";
+  src: url("https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Regular.otf")
+    format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Euclid Circular B";
+  src: url("https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Medium.otf")
+    format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Euclid Circular B";
+  src: url("https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Semibold.otf")
+    format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--ad-surface-light);
+  font-family: "Euclid Circular B", system-ui, -apple-system, sans-serif;
+  color: var(--ad-text-primary);
+}
+
+.field-input {
+  @apply mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none;
+  border-color: var(--ad-border-default);
+  background: var(--ad-surface-white);
+  color: var(--ad-text-primary);
+}
+
+.field-input:focus {
+  border-color: var(--ad-border-selected);
+}
+
+/* ─── App canvas ─────────────────────────────────────────────────────── */
+
+.app-canvas {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px 56px;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 18%, rgba(88, 86, 120, 0.22), transparent 62%),
+    radial-gradient(ellipse 70% 45% at 50% 100%, rgba(0, 0, 0, 0.55), transparent 58%),
+    linear-gradient(165deg, #1a1a22 0%, #0d0d12 42%, #050508 100%);
+}
+
+.app-canvas--device {
+  overflow: hidden;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #fff;
+}
+
+body:has(.app-canvas--device) {
+  overflow: hidden;
+  background: #fff;
+}
+
+body:has(.app-canvas--device) #root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ─── iPhone 16 hyperrealistic mockup (393 × 852 viewport) ─────────── */
+
+.iphone16-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateZ(0);
+}
+
+.iphone16-shadow {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  width: 72%;
+  height: 42px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.14) 0%, transparent 72%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.iphone16-shell {
+  position: relative;
+  padding: 11px;
+  border-radius: 58px;
+  background:
+    linear-gradient(145deg, #f0f0f4 0%, #d8d8de 14%, #b8b8c0 38%, #ececf0 52%, #a8a8b0 72%, #d0d0d8 88%, #9898a0 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 2px 4px rgba(0, 0, 0, 0.12),
+    0 18px 36px rgba(0, 0, 0, 0.28),
+    0 42px 80px rgba(0, 0, 0, 0.42);
+}
+
+.iphone16-shell::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 57px;
+  background: linear-gradient(
+    168deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.08) 22%,
+    rgba(0, 0, 0, 0.06) 48%,
+    rgba(255, 255, 255, 0.12) 72%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.iphone16-antenna {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: linear-gradient(180deg, #6e6e76, #3a3a42);
+  z-index: 2;
+  opacity: 0.65;
+}
+
+.iphone16-antenna--top {
+  top: 7px;
+}
+
+.iphone16-antenna--bottom {
+  bottom: 7px;
+}
+
+.iphone16-btn {
+  position: absolute;
+  border-radius: 2px;
+  z-index: 3;
+  background: linear-gradient(90deg, #5a5a62 0%, #c8c8d0 42%, #f4f4f8 50%, #c8c8d0 58%, #5a5a62 100%);
+  box-shadow:
+    -1px 0 1px rgba(0, 0, 0, 0.35),
+    1px 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.iphone16-btn--vol-up {
+  left: -2px;
+  top: 128px;
+  width: 3px;
+  height: 34px;
+}
+
+.iphone16-btn--vol-down {
+  left: -2px;
+  top: 172px;
+  width: 3px;
+  height: 34px;
+}
+
+.iphone16-btn--action {
+  right: -2px;
+  top: 196px;
+  width: 3px;
+  height: 52px;
+  border-radius: 3px;
+}
+
+.iphone16-btn--power {
+  right: -2px;
+  top: 132px;
+  width: 3px;
+  height: 72px;
+}
+
+.iphone16-screen {
+  position: relative;
+  z-index: 1;
+  width: 393px;
+  height: 852px;
+  border-radius: 48px;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 2.5px rgba(255, 255, 255, 0.06);
+}
+
+.iphone16-bezel {
+  position: absolute;
+  inset: 0;
+  border-radius: 48px;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.iphone16-island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 126px;
+  height: 37px;
+  transform: translateX(-50%);
+  border-radius: 20px;
+  background: #000;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.iphone16-island-lens {
+  margin-left: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(120, 140, 180, 0.55), transparent 42%),
+    radial-gradient(circle at 60% 65%, rgba(20, 24, 40, 0.95), #050508 72%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.iphone16-island-sensor {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #3a2848, #120818 70%);
+  opacity: 0.85;
+}
+
+.iphone16-viewport {
+  position: relative;
+  z-index: 1;
+  width: 393px;
+  height: 852px;
+  max-height: 852px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #fff;
+}
+
+.iphone16-app-root {
+  container-type: inline-size;
+  container-name: iphone-app;
+  width: 100%;
+  height: 100%;
+  max-height: 852px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y pinch-zoom;
+  display: flex;
+  flex-direction: column;
+}
+
+.iphone16-app-root > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Pin driver UI to the mockup screen — never browser dvh */
+.iphone16-app-root .ad-driver-splash,
+.iphone16-app-root .ad-page {
+  height: 100%;
+  min-height: 0 !important;
+  max-height: 100%;
+}
+
+.iphone16-app-root .ad-driver-splash-hero-content {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  /* Island: top 13px + height 37px → content starts 10px below */
+  padding: 60px 20px 12px;
+}
+
+.iphone16-app-root .ad-driver-splash-title {
+  font-size: 20px;
+  line-height: 26px;
+}
+
+.iphone16-app-root .ad-driver-splash-lead {
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.iphone16-app-root .ad-driver-splash-sheet {
+  padding: 10px 18px 30px;
+}
+
+.iphone16-app-root .ad-driver-splash-form {
+  margin-top: 12px;
+}
+
+.iphone16-app-root .ad-page {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Landing scrolls as a normal document — flex shrink must not collapse hero/sections */
+.iphone16-app-root .ad-page-landing {
+  display: block;
+  height: 100%;
+  min-height: 0 !important;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.iphone16-app-root .ad-driver-app-main {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.iphone16-app-root .ad-driver-requests {
+  width: 100%;
+  height: 800px;
+  max-height: 100%;
+}
+
+/* Customer app inside iPhone mockup */
+.iphone16-app-root .ad-customer-app {
+  height: 100%;
+  min-height: 0 !important;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.iphone16-app-root .ad-customer-main {
+  flex: 1;
+  min-height: 0;
+  padding: 0 16px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.iphone16-app-root .ad-customer-main::-webkit-scrollbar {
+  display: none;
+}
+
+.iphone16-app-root .ad-page-landing::-webkit-scrollbar {
+  display: none;
+}
+
+.iphone16-app-root .ad-site-header-inner {
+  max-width: none;
+  padding-left: 16px;
+  padding-right: 16px;
+  height: 56px;
+}
+
+/* Force mobile hero stack inside mockup (viewport media queries still use browser width). */
+.iphone16-app-root .ad-hero.ad-hero--device {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-shrink: 0;
+  height: auto !important;
+  min-height: auto !important;
+  max-width: 100%;
+  overflow: visible !important;
+}
+
+.iphone16-app-root .ad-hero.ad-hero--device .ad-hero-visual {
+  position: relative !important;
+  flex: 0 0 auto;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+  height: 200px !important;
+}
+
+.iphone16-app-root .ad-hero.ad-hero--device .ad-hero-copy {
+  position: relative !important;
+  flex: 0 0 auto;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  padding: 24px 16px 32px !important;
+  background: var(--ad-surface-white) !important;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.iphone16-app-root .ad-page-landing .ad-site-header {
+  flex-shrink: 0;
+}
+
+.iphone16-app-root .ad-page-landing .ad-hero.ad-hero--device {
+  flex-shrink: 0;
+}
+
+.iphone16-app-root .ad-page-landing .ad-landing-section,
+.iphone16-app-root .ad-page-landing .ad-landing-trust {
+  flex-shrink: 0;
+}
+
+.iphone16-app-root .ad-landing-section {
+  position: relative;
+  z-index: 0;
+  padding: 32px 16px 40px;
+}
+
+.iphone16-app-root .ad-hero-title {
+  font-size: 22px;
+  line-height: 28px;
+}
+
+.iphone16-app-root .ad-hero-subtitle,
+.iphone16-app-root .ad-hero-body {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.iphone16-app-root .ad-hero-cta-row {
+  flex-direction: column !important;
+}
+
+.iphone16-app-root .ad-hero-cta-row .ad-hero-cta {
+  flex: none !important;
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  line-height: 24px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+.iphone16-app-root .ad-hero-cta-secondary {
+  height: 48px !important;
+  border-radius: 12px !important;
+}
+
+.iphone16-app-root .ad-hero-panel {
+  display: none !important;
+}
+
+.iphone16-app-root .ad-hero-visual-img {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.iphone16-app-root .ad-landing-section-title {
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.iphone16-app-root .ad-landing-section-lead {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.iphone16-app-root .ad-landing-grid {
+  grid-template-columns: 1fr;
+  margin-top: 20px;
+}
+
+.iphone16-app-root .ad-landing-trust-inner {
+  grid-template-columns: 1fr;
+}
+
+.iphone16-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.iphone16-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  z-index: 5;
+  width: 134px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.iphone16-screen-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  border-radius: 48px;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.04) 18%,
+    transparent 38%,
+    transparent 62%,
+    rgba(255, 255, 255, 0.03) 82%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  pointer-events: none;
+}
+
+.iphone16-floor-reflection {
+  display: none;
+}
+
+/* Legacy alias — use iphone16-* via DeviceFrame */
+.device-stage {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-height: 940px) {
+  .iphone16-stage {
+    transform: scale(0.86);
+    transform-origin: center center;
+  }
+
+  .app-canvas--device {
+    padding: 16px;
+  }
+}
+
+@media (max-height: 820px) {
+  .iphone16-stage {
+    transform: scale(0.76);
+    transform-origin: center center;
+  }
+}
