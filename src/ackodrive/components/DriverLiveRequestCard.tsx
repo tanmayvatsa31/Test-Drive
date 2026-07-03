@@ -42,6 +42,35 @@ function RequestDivider() {
   );
 }
 
+function CustomerNameField({
+  name,
+  showCall,
+  onCall,
+}: {
+  name: string;
+  showCall: boolean;
+  onCall: () => void;
+}) {
+  return (
+    <div className="ad-driver-request-field">
+      <span className="ad-driver-request-label">Customer name</span>
+      <div className="ad-driver-request-name-row">
+        <p className="ad-driver-request-name">{name || "—"}</p>
+        {showCall ? (
+          <button
+            type="button"
+            className="ad-driver-assigned-call ad-driver-request-customer-call"
+            aria-label={`Call ${name || "customer"}`}
+            onClick={onCall}
+          >
+            <img src={publicAsset(CALL_DRIVER_ICON)} alt="" width={20} height={20} />
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function RequestField({
   label,
   value,
@@ -161,6 +190,8 @@ export function DriverLiveRequestCard({
   const dealerLabel = slot?.dealerName ?? DEALER.name;
   const slotLabel = slot ? formatDriverSlotTime(slot) : "—";
   const address = state.customerAddress?.trim() || "—";
+  const customerName = state.customerName?.trim() || "—";
+  const showCustomerCall = state.enRoute && !state.rideComplete;
 
   return (
     <article className="ad-driver-request-card">
@@ -171,21 +202,10 @@ export function DriverLiveRequestCard({
 
       <RequestDivider />
 
-      <RequestField
-        label="Customer name"
-        value={state.customerName || "—"}
-        action={
-          state.driverAtLocation ? (
-            <button
-              type="button"
-              className="ad-driver-request-call"
-              aria-label={`Call ${state.customerName || "customer"}`}
-              onClick={() => void driverPlacedCall(setState)}
-            >
-              <img src={publicAsset(CALL_DRIVER_ICON)} alt="" width={20} height={20} />
-            </button>
-          ) : undefined
-        }
+      <CustomerNameField
+        name={customerName}
+        showCall={showCustomerCall}
+        onCall={() => void driverPlacedCall(setState)}
       />
       <RequestDivider />
       <RequestField label="Test drive slot" value={slotLabel} />
@@ -239,7 +259,9 @@ export function DriverLiveRequestCard({
               <button
                 type="button"
                 className="ad-driver-request-cta"
-                onClick={() => void setState({ enRoute: true }, "Driver started trip")}
+                onClick={() =>
+                  void setState({ enRoute: true, driverAtLocation: false }, "Driver started trip")
+                }
               >
                 Start trip · Mark en route
               </button>

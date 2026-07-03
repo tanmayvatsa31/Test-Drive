@@ -510,24 +510,26 @@
   white-space: nowrap;
 }
 
-.ad-driver-request-call {
+.ad-driver-request-name-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid #121212;
-  border-radius: 8px;
-  background: var(--ad-surface-white);
-  cursor: pointer;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
-.ad-driver-request-call img {
-  display: block;
-  width: 20px;
-  height: 20px;
+.ad-driver-request-name {
+  margin: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #040222;
+}
+
+.ad-driver-request-customer-call {
+  flex-shrink: 0;
 }
 
 /* Action — node 5518:4431, 288×120 */
