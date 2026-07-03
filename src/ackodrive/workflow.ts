@@ -112,12 +112,8 @@ export function isWaitingForDealerAssignment(state: DemoState): boolean {
   return true;
 }
 
-/** Full-screen dealer wait — render outside app shell (no header). */
-export function shouldShowDealerConfirmingLoader(
-  state: DemoState,
-  hasSelectedCarFromListing: boolean,
-): boolean {
-  if (hasSelectedCarFromListing) return false;
+/** Full-screen request in progress — render outside app shell (no header). */
+export function shouldShowDealerConfirmingLoader(state: DemoState): boolean {
   if (!hasActiveTestRideIncident(state)) return false;
   if (
     (state.qualification === "undecided" || state.qualification === "browsing") &&
@@ -131,29 +127,19 @@ export function shouldShowDealerConfirmingLoader(
 }
 
 /** Full-screen driver en route — Figma 5515-3820. */
-export function shouldShowDriverEnRouteScreen(
-  state: DemoState,
-  hasSelectedCarFromListing: boolean,
-): boolean {
-  if (!shouldShowDriverAssignedScreen(state, hasSelectedCarFromListing)) return false;
+export function shouldShowDriverEnRouteScreen(state: DemoState): boolean {
+  if (!shouldShowDriverAssignedScreen(state)) return false;
   return state.enRoute && !state.rideComplete;
 }
 
 /** Full-screen incoming masked call — before driver assigned content. */
-export function shouldShowIncomingDriverCallScreen(
-  state: DemoState,
-  hasSelectedCarFromListing: boolean,
-): boolean {
-  if (!shouldShowDriverAssignedScreen(state, hasSelectedCarFromListing)) return false;
+export function shouldShowIncomingDriverCallScreen(state: DemoState): boolean {
+  if (!shouldShowDriverAssignedScreen(state)) return false;
   return state.callPlaced && !state.custConfirmed;
 }
 
 /** Full-screen driver assigned — render outside app shell (custom toolbar only). */
-export function shouldShowDriverAssignedScreen(
-  state: DemoState,
-  hasSelectedCarFromListing: boolean,
-): boolean {
-  if (hasSelectedCarFromListing) return false;
+export function shouldShowDriverAssignedScreen(state: DemoState): boolean {
   if (!hasActiveTestRideIncident(state)) return false;
   if (!isBookingConfirmed(state) || !state.otp || !state.chosenSlot || !state.driver) return false;
   return true;

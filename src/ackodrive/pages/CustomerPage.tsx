@@ -42,21 +42,20 @@ export function CustomerPage() {
 
 function CustomerPageLayout() {
   const { state, setState, loaded } = useDemoState();
-  const hasSelectedCarFromListing = getSelectedCar() != null;
 
-  if (loaded && shouldShowDealerConfirmingLoader(state, hasSelectedCarFromListing)) {
+  if (loaded && shouldShowDealerConfirmingLoader(state)) {
     return <TestDriveRequestInProgressScreen state={state} />;
   }
 
-  if (loaded && shouldShowIncomingDriverCallScreen(state, hasSelectedCarFromListing)) {
+  if (loaded && shouldShowIncomingDriverCallScreen(state)) {
     return <IncomingDriverCallScreen state={state} setState={setState} />;
   }
 
-  if (loaded && shouldShowDriverEnRouteScreen(state, hasSelectedCarFromListing)) {
+  if (loaded && shouldShowDriverEnRouteScreen(state)) {
     return <DriverEnRouteScreen state={state} setState={setState} />;
   }
 
-  if (loaded && shouldShowDriverAssignedScreen(state, hasSelectedCarFromListing)) {
+  if (loaded && shouldShowDriverAssignedScreen(state)) {
     return <DriverAssignedScreen state={state} setState={setState} />;
   }
 
@@ -74,7 +73,9 @@ function CustomerContent() {
 
   const session = getSession("customer");
   const hasSelectedCarFromListing = getSelectedCar() != null;
-  const showBookingForm = hasSelectedCarFromListing || !hasActiveTestRideIncident(state);
+  const showBookingForm =
+    !hasActiveTestRideIncident(state) ||
+    (hasSelectedCarFromListing && !state.leadSent && !state.chosenSlot);
 
   if (showBookingForm) {
     return (
@@ -90,6 +91,10 @@ function CustomerContent() {
 
   if (inTestRideJourney && isCustomerSchedulingSlot(state)) {
     return <ScheduleTestRideScreen state={state} setState={setState} />;
+  }
+
+  if (isWaitingForDealerAssignment(state)) {
+    return null;
   }
 
   if (inTestRideJourney) {
