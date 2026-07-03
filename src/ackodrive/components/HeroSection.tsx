@@ -1,4 +1,4 @@
-import { publicAsset, publicAssetSrcSet } from "../publicAsset";
+import { publicAsset } from "../publicAsset";
 
 export function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
   return (
@@ -6,11 +6,6 @@ export function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
       <div className="ad-hero-visual">
         <img
           src={publicAsset("/assets/figma-hero-1200.png")}
-          srcSet={publicAssetSrcSet([
-            { path: "/assets/figma-hero-1200.png", width: 1200 },
-            { path: "/assets/figma-hero-image.png", width: 4096 },
-          ])}
-          sizes="55.56vw"
           alt="ACKO Drive test ride vehicles"
           className="ad-hero-visual-img"
           width={1600}

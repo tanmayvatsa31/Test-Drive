@@ -7,9 +7,9 @@ import type { SetStateFn } from "../workflowActions";
 import { publicAsset } from "../publicAsset";
 import { driverPlacedCall } from "../workflowActions";
 
-const CREW_ENROUTE_ICON = publicAsset("/assets/figma/crew-member-enroute-icon.png");
-const ENROUTE_MAP = publicAsset("/assets/figma/enroute-map.png");
-const CALL_DRIVER_ICON = publicAsset("/assets/figma/call-driver-icon.png");
+const CREW_ENROUTE_ICON = "/assets/figma/crew-member-enroute-icon.png";
+const ENROUTE_MAP = "/assets/figma/enroute-map.png";
+const CALL_DRIVER_ICON = "/assets/figma/call-driver-icon.png";
 
 /** Approximate route curve over the map screenshot (viewBox 0 0 320 117). */
 const ROUTE_PATH = "M 28 82 C 72 62, 108 52, 148 58 S 228 62, 292 48";
@@ -52,7 +52,7 @@ function EnRouteLiveMap({ progress, arrived }: { progress: number; arrived: bool
   return (
     <section className="ad-driver-enroute-map" aria-label="Live driver location">
       <div className="ad-driver-enroute-map-visual">
-        <img src={ENROUTE_MAP} alt="" className="ad-driver-enroute-map-img" />
+        <img src={publicAsset(ENROUTE_MAP)} alt="" className="ad-driver-enroute-map-img" />
         <svg
           className="ad-driver-enroute-map-overlay"
           viewBox="0 0 320 117"
@@ -181,7 +181,7 @@ export function DriverEnRouteScreen({
       <section className="ad-driver-enroute-hero">
         <div className="ad-driver-enroute-icon-wrap">
           <img
-            src={CREW_ENROUTE_ICON}
+            src={publicAsset(CREW_ENROUTE_ICON)}
             alt=""
             className="ad-driver-enroute-icon"
             width={64}
@@ -220,7 +220,7 @@ export function DriverEnRouteScreen({
               aria-label={`Call ${driver.name}`}
               onClick={() => void driverPlacedCall(setState)}
             >
-              <img src={CALL_DRIVER_ICON} alt="" width={20} height={20} />
+              <img src={publicAsset(CALL_DRIVER_ICON)} alt="" width={20} height={20} />
             </button>
           </div>
 

@@ -7,7 +7,7 @@ import type { SetStateFn } from "../workflowActions";
 import { publicAsset } from "../publicAsset";
 import { driverPlacedCall } from "../workflowActions";
 
-const DIVIDER = publicAsset("/assets/figma/driver-request-divider.png");
+const DIVIDER = "/assets/figma/driver-request-divider.png";
 
 function formatDriverSlotTime(slot: NonNullable<DemoState["chosenSlot"]>): string {
   const date = new Date(`${slot.date}T00:00:00`);
@@ -29,7 +29,7 @@ function buildCarTitle(state: DemoState): string {
 function RequestDivider() {
   return (
     <div className="ad-driver-request-divider-wrap" aria-hidden="true">
-      <img src={DIVIDER} alt="" className="ad-driver-request-divider" />
+      <img src={publicAsset(DIVIDER)} alt="" className="ad-driver-request-divider" />
     </div>
   );
 }
@@ -60,13 +60,13 @@ function RequestField({
   );
 }
 
-const LIVE_EMPTY_ILLUSTRATION = publicAsset("/assets/figma/driver-requests-empty.svg");
+const LIVE_EMPTY_ILLUSTRATION = "/assets/figma/driver-requests-empty.svg";
 
 export function DriverLiveRequestsEmpty() {
   return (
     <div className="ad-driver-requests-empty" role="status">
       <img
-        src={LIVE_EMPTY_ILLUSTRATION}
+        src={publicAsset(LIVE_EMPTY_ILLUSTRATION)}
         alt=""
         className="ad-driver-requests-empty-art"
         width={56}

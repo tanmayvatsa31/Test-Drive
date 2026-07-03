@@ -1,27 +1,8 @@
+import { useMemo } from "react";
 import { DeviceFrame } from "../../components/DeviceFrame";
-import { APP_URLS } from "../../ackodrive/appUrls";
+import { getAppUrls } from "../../ackodrive/appUrls";
 import { embedAppUrl } from "../../ackodrive/embedMode";
 import { isGitHubPagesDeploy } from "../../ackodrive/AppRouter";
-
-const adminLoginPath = isGitHubPagesDeploy() ? "#/login" : "/login";
-
-const PANELS = [
-  {
-    id: "customer",
-    label: "Customer",
-    src: embedAppUrl(APP_URLS.customer),
-  },
-  {
-    id: "driver",
-    label: "Driver",
-    src: embedAppUrl(APP_URLS.driver),
-  },
-  {
-    id: "admin",
-    label: "Superadmin",
-    src: embedAppUrl(APP_URLS.admin, adminLoginPath),
-  },
-] as const;
 
 function ViewerPanel({ label, src }: { label: string; src: string }) {
   return (
@@ -40,6 +21,17 @@ function ViewerPanel({ label, src }: { label: string; src: string }) {
 }
 
 export function ViewerPage() {
+  const adminLoginPath = isGitHubPagesDeploy() ? "#/login" : "/login";
+
+  const panels = useMemo(() => {
+    const urls = getAppUrls();
+    return [
+      { id: "customer", label: "Customer", src: embedAppUrl(urls.customer) },
+      { id: "driver", label: "Driver", src: embedAppUrl(urls.driver) },
+      { id: "admin", label: "Superadmin", src: embedAppUrl(urls.admin, adminLoginPath) },
+    ] as const;
+  }, [adminLoginPath]);
+
   return (
     <div className="demo-viewer">
       <header className="demo-viewer-header">
@@ -47,7 +39,7 @@ export function ViewerPage() {
       </header>
 
       <div className="demo-viewer-stage">
-        {PANELS.map((panel) => (
+        {panels.map((panel) => (
           <ViewerPanel key={panel.id} label={panel.label} src={panel.src} />
         ))}
       </div>

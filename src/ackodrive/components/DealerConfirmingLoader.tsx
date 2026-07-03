@@ -1,6 +1,6 @@
 import { publicAsset } from "../publicAsset";
 
-const DEALER_WAITING_ILLUSTRATION = publicAsset("/assets/figma/dealer-waiting-car.png");
+const DEALER_WAITING_ILLUSTRATION = "/assets/figma/dealer-waiting-car.png";
 
 const WAITING_MESSAGE = "Waiting for a nearby dealership to assign a driver";
 
@@ -10,7 +10,7 @@ export function DealerConfirmingLoader() {
       <div className="ad-dealer-waiting-inner">
         <div className="ad-dealer-waiting-art">
           <img
-            src={DEALER_WAITING_ILLUSTRATION}
+            src={publicAsset(DEALER_WAITING_ILLUSTRATION)}
             alt=""
             width={150}
             height={150}

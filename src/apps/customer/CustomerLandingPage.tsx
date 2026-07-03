@@ -12,8 +12,8 @@ import {
 import type { PortalGateUser } from "../../ackodrive/portalGate";
 import { publicAsset } from "../../ackodrive/publicAsset";
 
-const BUY_NEW_CAR_CARD_ART = publicAsset("/assets/figma/buy-new-car-card.png");
-const BOOK_TEST_DRIVE_CARD_ART = publicAsset("/assets/figma/book-test-drive-card.png");
+const BUY_NEW_CAR_CARD_ART = "/assets/figma/buy-new-car-card.png";
+const BOOK_TEST_DRIVE_CARD_ART = "/assets/figma/book-test-drive-card.png";
 
 const LANDING_ACTIONS: {
   intent: CustomerIntent;
@@ -83,7 +83,7 @@ export function CustomerLandingPage() {
               onClick={() => handleIntent(action.intent)}
             >
               {action.image ? (
-                <img src={action.image} alt="" className="ad-landing-card-art" width={80} height={80} />
+                <img src={publicAsset(action.image)} alt="" className="ad-landing-card-art" width={80} height={80} />
               ) : (
                 <span className="ad-landing-card-emoji" aria-hidden="true">
                   {action.emoji}

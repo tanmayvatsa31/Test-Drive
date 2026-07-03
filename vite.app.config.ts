@@ -28,6 +28,21 @@ const pagesBase =
   process.env.VITE_BASE_PATH ??
   (process.env.GITHUB_ACTIONS && repoName ? `/${repoName}/` : "/");
 
+/** Inject `<base href>` so relative public assets resolve on GitHub Pages subpaths. */
+function pagesBaseTag(base: string): Plugin {
+  return {
+    name: "pages-base-tag",
+    transformIndexHtml: {
+      order: "pre",
+      handler(html) {
+        if (base === "/") return html;
+        if (html.includes("<base ")) return html;
+        return html.replace("<head>", `<head>\n    <base href="${base}" />`);
+      },
+    },
+  };
+}
+
 /** Serve the app entry at `/` and for client-side routes (e.g. `/app`, `/dealer`). */
 function spaFallback(entry: string): Plugin {
   return {
@@ -61,7 +76,7 @@ function spaFallback(entry: string): Plugin {
 
 export default defineConfig({
   base: pagesBase,
-  plugins: [react(), tailwindcss(), spaFallback(ENTRY)],
+  plugins: [react(), tailwindcss(), pagesBaseTag(pagesBase), spaFallback(ENTRY)],
   define: {
     "import.meta.env.VITE_APP_TARGET": JSON.stringify(TARGET),
   },

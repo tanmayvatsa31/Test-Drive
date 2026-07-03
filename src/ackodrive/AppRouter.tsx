@@ -12,5 +12,6 @@ export function AppRouter({ children }: { children: ReactNode }) {
 }
 
 export function isGitHubPagesDeploy(): boolean {
-  return import.meta.env.VITE_GITHUB_PAGES === "true";
+  if (import.meta.env.VITE_GITHUB_PAGES === "true") return true;
+  return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
 }

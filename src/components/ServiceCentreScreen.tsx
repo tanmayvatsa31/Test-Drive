@@ -1,14 +1,18 @@
 import "./service-centre.css";
 import { publicAsset } from "../ackodrive/publicAsset";
 
-const ASSETS = publicAsset("/assets/figma");
+const ASSETS = "/assets/figma";
+
+function asset(path: string): string {
+  return publicAsset(`${ASSETS}/${path}`);
+}
 
 const CAROUSEL = [
   {
     tag: "FREE CAR PICKUP",
     title: "Crew verification at society gate before pickup",
     pill: "8 slots in next 24 hours",
-    image: `${ASSETS}/carousel-1.png`,
+    image: "carousel-1.png",
     imgClass: "sc-card__img--pickup",
     gradient:
       "linear-gradient(180.63deg, rgba(0,0,0,0) 14.47%, rgba(0,0,0,0.451) 38.9%, #000 83.85%)",
@@ -17,7 +21,7 @@ const CAROUSEL = [
     tag: "INSPECTION",
     title: "Service estimate sent to your phone after inspection",
     pill: "Fix price, no mid-service surprise",
-    image: `${ASSETS}/carousel-2.png`,
+    image: "carousel-2.png",
     imgClass: "sc-card__img--inspection",
     gradient:
       "linear-gradient(180.78deg, rgba(0,0,0,0) 13.15%, rgba(0,0,0,0.34) 32.36%, #000 69.58%)",
@@ -26,7 +30,7 @@ const CAROUSEL = [
     tag: "THE TEAM",
     title: "Anil, Suresh, Ajay with over 19 years of experience in Hyundai, Honda, BMW",
     pill: "Crew trained on OEM standards",
-    image: `${ASSETS}/carousel-3.png`,
+    image: "carousel-3.png",
     imgClass: "sc-card__img--team",
     gradient: "linear-gradient(179.12deg, rgba(0,0,0,0) 66%, #000 83.71%)",
     tall: true,
@@ -35,7 +39,7 @@ const CAROUSEL = [
     tag: "PARTS",
     title: "Genuine car parts, unboxed on camera, every single time",
     pill: "Serial number and photos sent to your phone",
-    image: `${ASSETS}/carousel-4.png`,
+    image: "carousel-4.png",
     imgClass: "sc-card__img--parts",
     gradient:
       "linear-gradient(180deg, rgba(0,0,0,0) 30.94%, rgba(0,0,0,0.6) 62.65%, #000 83.91%)",
@@ -45,7 +49,7 @@ const CAROUSEL = [
     tag: "BACK TO YOU",
     title: "Same day-return and a 30-day ACKO warranty on every job",
     pill: "If anything goes wrong, we improve it for free",
-    image: `${ASSETS}/carousel-5.png`,
+    image: "carousel-5.png",
     imgClass: "sc-card__img--return",
     gradient:
       "linear-gradient(180.89deg, rgba(0,0,0,0) 25.54%, rgba(0,0,0,0.38) 42.88%, #000 71.23%)",
@@ -73,12 +77,12 @@ function starImages(rating: number): string[] {
   const frac = Math.round((rating - full) * 10);
   const out: string[] = [];
 
-  for (let i = 0; i < full && i < 5; i++) out.push(`${ASSETS}/star-full.png`);
+  for (let i = 0; i < full && i < 5; i++) out.push(asset("star-full.png"));
   if (out.length < 5) {
-    if (frac >= 7) out.push(`${ASSETS}/star-three-quarter.png`);
-    else if (frac >= 2) out.push(`${ASSETS}/star-quarter.png`);
+    if (frac >= 7) out.push(asset("star-three-quarter.png"));
+    else if (frac >= 2) out.push(asset("star-quarter.png"));
   }
-  while (out.length < 5) out.push(`${ASSETS}/star-empty.png`);
+  while (out.length < 5) out.push(asset("star-empty.png"));
   return out.slice(0, 5);
 }
 
@@ -95,7 +99,7 @@ function Rating({ rating, reviews }: { rating: number; reviews: string }) {
 }
 
 function Tick() {
-  return <img className="sc-tick" src={`${ASSETS}/tick.png`} alt="" width={16} height={16} />;
+  return <img className="sc-tick" src={asset("tick.png")} alt="" width={16} height={16} />;
 }
 
 export function ServiceCentreScreen() {
@@ -105,16 +109,16 @@ export function ServiceCentreScreen() {
         <div className="sc-status">
           <span className="sc-status__time">23:10</span>
           <div className="sc-status__icons">
-            <img src={`${ASSETS}/status-signal.png`} alt="" width={17} height={12} />
-            <img src={`${ASSETS}/status-battery.png`} alt="" width={25} height={12} />
+            <img src={asset("status-signal.png")} alt="" width={17} height={12} />
+            <img src={asset("status-battery.png")} alt="" width={25} height={12} />
           </div>
         </div>
         <div className="sc-toolbar">
           <button type="button" className="sc-back" aria-label="Go back">
-            <img src={`${ASSETS}/back.png`} alt="" width={24} height={24} />
+            <img src={asset("back.png")} alt="" width={24} height={24} />
           </button>
           <button type="button" className="sc-help">
-            <img src={`${ASSETS}/help.png`} alt="" width={16} height={16} />
+            <img src={asset("help.png")} alt="" width={16} height={16} />
             <span>Help</span>
           </button>
         </div>
@@ -125,7 +129,7 @@ export function ServiceCentreScreen() {
         <article className="sc-hero">
           <div className="sc-hero__badge">
             <span>Best for your car</span>
-            <img src={`${ASSETS}/info.png`} alt="" width={14} height={14} />
+            <img src={asset("info.png")} alt="" width={14} height={14} />
           </div>
 
           <div className="sc-hero__body">
@@ -134,7 +138,7 @@ export function ServiceCentreScreen() {
             <Rating rating={4.2} reviews="300+ reviews" />
             <button type="button" className="sc-link">
               View 20+ images of the service centre
-              <img src={`${ASSETS}/chevron.png`} alt="" width={16} height={16} />
+              <img src={asset("chevron.png")} alt="" width={16} height={16} />
             </button>
           </div>
 
@@ -148,7 +152,7 @@ export function ServiceCentreScreen() {
                   <div className="sc-card__media">
                     <img
                       className={`sc-card__img ${item.imgClass}`}
-                      src={item.image}
+                      src={asset(item.image)}
                       alt=""
                     />
                     <div className="sc-card__shade" style={{ background: item.gradient }} />
@@ -186,7 +190,7 @@ export function ServiceCentreScreen() {
               <p className="sc-feedback__title">How we catered to customer complaints</p>
               <p className="sc-feedback__sub">...since they faced experience issues</p>
             </div>
-            <img src={`${ASSETS}/chevron.png`} alt="" width={20} height={20} />
+            <img src={asset("chevron.png")} alt="" width={20} height={20} />
           </button>
 
           <button type="button" className="sc-cta">

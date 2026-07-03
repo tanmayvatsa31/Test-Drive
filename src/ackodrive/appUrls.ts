@@ -14,11 +14,27 @@ function joinBasePath(origin: string, basePath: string, page: string): string {
   return new URL(page, `${origin}${base}`).href;
 }
 
+function resolveSiteBase(): string {
+  if (typeof document !== "undefined") {
+    const { pathname } = new URL(document.baseURI);
+    const segment = pathname.split("/").filter(Boolean)[0];
+    if (segment && !segment.endsWith(".html")) {
+      return `/${segment}/`;
+    }
+  }
+  return import.meta.env.BASE_URL;
+}
+
+function isPublishedSite(): boolean {
+  if (import.meta.env.VITE_GITHUB_PAGES === "true") return true;
+  return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+}
+
 /** Resolves app entry URLs for local dev servers or GitHub Pages html entries. */
 export function getAppUrls(): AppUrls {
-  if (import.meta.env.VITE_GITHUB_PAGES === "true" && typeof window !== "undefined") {
+  if (isPublishedSite() && typeof window !== "undefined") {
     const origin = window.location.origin;
-    const base = import.meta.env.BASE_URL;
+    const base = resolveSiteBase();
     return {
       customer: joinBasePath(origin, base, "customer.html"),
       driver: joinBasePath(origin, base, "driver.html"),
@@ -63,7 +79,8 @@ export function getDemoFlowTabs(): DemoFlowTab[] {
 }
 
 function isGitHubPagesDeploy(): boolean {
-  return import.meta.env.VITE_GITHUB_PAGES === "true";
+  if (import.meta.env.VITE_GITHUB_PAGES === "true") return true;
+  return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
 }
 
 export function openApp(app: AppUrlKey, path = ""): void {

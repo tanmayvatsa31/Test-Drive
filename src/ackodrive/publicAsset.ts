@@ -1,7 +1,11 @@
-/** Resolve a `public/` asset path against Vite `base` (e.g. `/Test-Drive/` on GitHub Pages). */
+/** Resolve a `public/` asset against the current document (works on GitHub Pages subpaths and local dev). */
 export function publicAsset(path: string): string {
   const normalized = path.replace(/^\//, "");
-  return `${import.meta.env.BASE_URL}${normalized}`;
+  if (typeof document !== "undefined") {
+    return new URL(normalized, document.baseURI).href;
+  }
+  const base = import.meta.env.BASE_URL;
+  return `${base}${normalized}`;
 }
 
 /** Build a responsive `srcSet` with base-aware URLs. */

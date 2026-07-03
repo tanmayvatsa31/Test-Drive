@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import ackoDriveLogo from "../../ackodrive/assets/icons/acko-drive-logo.png";
 import { publicAsset } from "../../ackodrive/publicAsset";
 
-const SPLASH_BG_PHOTO = publicAsset("/assets/driver-splash-bg.png");
+const SPLASH_BG_PHOTO = "/assets/driver-splash-bg.png";
 
 export function DriverSplashScreen({
   children,
@@ -12,7 +12,7 @@ export function DriverSplashScreen({
   return (
     <div className="ad-driver-splash">
       <div className="ad-driver-splash-bg" aria-hidden="true">
-        <img src={SPLASH_BG_PHOTO} alt="" className="ad-driver-splash-bg-photo" />
+        <img src={publicAsset(SPLASH_BG_PHOTO)} alt="" className="ad-driver-splash-bg-photo" />
         <div className="ad-driver-splash-bg-gradient" />
       </div>
 

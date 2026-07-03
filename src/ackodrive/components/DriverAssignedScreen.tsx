@@ -9,8 +9,8 @@ import { driverPlacedCall } from "../workflowActions";
 import { publicAsset } from "../publicAsset";
 import { PrimaryButton } from "./ui";
 
-const DRIVER_ASSIGNED_ICON = publicAsset("/assets/figma/driver-assigned-icon.png");
-const CALL_DRIVER_ICON = publicAsset("/assets/figma/call-driver-icon.png");
+const DRIVER_ASSIGNED_ICON = "/assets/figma/driver-assigned-icon.png";
+const CALL_DRIVER_ICON = "/assets/figma/call-driver-icon.png";
 
 function formatAssignedSlotTime(slot: NonNullable<DemoState["chosenSlot"]>): string {
   const date = new Date(`${slot.date}T00:00:00`);
@@ -74,7 +74,7 @@ export function DriverAssignedScreen({
         <div className="ad-driver-assigned-icon-wrap">
           <div className="ad-driver-assigned-icon-bg" aria-hidden="true" />
           <img
-            src={DRIVER_ASSIGNED_ICON}
+            src={publicAsset(DRIVER_ASSIGNED_ICON)}
             alt=""
             className="ad-driver-assigned-icon"
             width={48}
@@ -111,7 +111,7 @@ export function DriverAssignedScreen({
               aria-label={`Call ${driver.name}`}
               onClick={() => void driverPlacedCall(setState)}
             >
-              <img src={CALL_DRIVER_ICON} alt="" width={20} height={20} />
+              <img src={publicAsset(CALL_DRIVER_ICON)} alt="" width={20} height={20} />
             </button>
           </div>
 

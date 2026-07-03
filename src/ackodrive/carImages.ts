@@ -20,10 +20,14 @@ const CAR_LISTING_PATHS: Record<string, string> = {
 };
 
 /** Local car hero images (sourced from Wikimedia Commons for demo use). */
-export const CAR_LISTING_IMAGES: Record<string, string> = Object.fromEntries(
-  Object.entries(CAR_LISTING_PATHS).map(([id, path]) => [id, publicAsset(path)]),
-);
-
 export function getCarListingImage(modelId: string): string | undefined {
-  return CAR_LISTING_IMAGES[modelId];
+  const path = CAR_LISTING_PATHS[modelId];
+  return path ? publicAsset(path) : undefined;
+}
+
+/** @deprecated Prefer getCarListingImage — resolves URLs at read time for GitHub Pages. */
+export function getCarListingImages(): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(CAR_LISTING_PATHS).map(([id, path]) => [id, publicAsset(path)]),
+  );
 }
