@@ -196,7 +196,7 @@ export function DriverLiveRequestCard({
         action={
           <button
             type="button"
-            className="ad-driver-request-edit"
+            className="ad-driver-request-direction"
             onClick={() => openCustomerDirections(address)}
           >
             Get direction
