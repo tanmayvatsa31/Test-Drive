@@ -138,7 +138,7 @@ function EnRouteLiveMap({
         <p className="ad-driver-enroute-map-note">
           {arrived
             ? `${driverName} is at your location`
-            : "The location will refresh every 5 minutes"}
+            : `${driverName} is on the way to your location`}
         </p>
       </footer>
     </section>
