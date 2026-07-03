@@ -45,6 +45,7 @@ export const INITIAL_STATE: DemoState = {
   callRejected: false,
   custConfirmed: false,
   enRoute: false,
+  driverAtLocation: false,
   rideComplete: false,
   enRouteDeadline: null,
   reassignmentCount: 0,

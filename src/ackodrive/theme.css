@@ -510,6 +510,26 @@
   white-space: nowrap;
 }
 
+.ad-driver-request-call {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #121212;
+  border-radius: 8px;
+  background: var(--ad-surface-white);
+  cursor: pointer;
+}
+
+.ad-driver-request-call img {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
 /* Action — node 5518:4431, 288×120 */
 .ad-driver-request-action {
   display: flex;

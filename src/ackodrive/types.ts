@@ -95,6 +95,7 @@ export interface DemoState {
   callRejected: boolean;
   custConfirmed: boolean;
   enRoute: boolean;
+  driverAtLocation: boolean;
   rideComplete: boolean;
   enRouteDeadline: number | null;
   reassignmentCount: number;

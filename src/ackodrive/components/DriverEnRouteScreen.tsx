@@ -22,9 +22,16 @@ function formatSlotTime(slot: NonNullable<DemoState["chosenSlot"]>): string {
 
 const ARRIVAL_PROGRESS = 1;
 
-function useEnRouteBikeProgress() {
-  const [progress, setProgress] = useState(0.15);
-  const [arrived, setArrived] = useState(false);
+function useEnRouteBikeProgress(syncedArrived: boolean) {
+  const [progress, setProgress] = useState(syncedArrived ? ARRIVAL_PROGRESS : 0.15);
+  const [arrived, setArrived] = useState(syncedArrived);
+
+  useEffect(() => {
+    if (syncedArrived) {
+      setProgress(ARRIVAL_PROGRESS);
+      setArrived(true);
+    }
+  }, [syncedArrived]);
 
   useEffect(() => {
     if (arrived) return;
@@ -45,7 +52,15 @@ function useEnRouteBikeProgress() {
   return { progress, arrived };
 }
 
-function EnRouteLiveMap({ progress, arrived }: { progress: number; arrived: boolean }) {
+function EnRouteLiveMap({
+  progress,
+  arrived,
+  driverName,
+}: {
+  progress: number;
+  arrived: boolean;
+  driverName: string;
+}) {
   const bikeLeft = `${8 + progress * 76}%`;
   const bikeTop = `${58 - Math.sin(progress * Math.PI) * 14}%`;
 
@@ -121,7 +136,9 @@ function EnRouteLiveMap({ progress, arrived }: { progress: number; arrived: bool
         className={`ad-driver-enroute-map-footer${arrived ? " ad-driver-enroute-map-footer-arrived" : ""}`}
       >
         <p className="ad-driver-enroute-map-note">
-          {arrived ? "Driver has reached your location" : "The location will refresh every 5 minutes"}
+          {arrived
+            ? `${driverName} is at your location`
+            : "The location will refresh every 5 minutes"}
         </p>
       </footer>
     </section>
@@ -136,7 +153,14 @@ export function DriverEnRouteScreen({
   setState: SetStateFn;
 }) {
   const navigate = useNavigate();
-  const { progress: bikeProgress, arrived: driverArrived } = useEnRouteBikeProgress();
+  const { progress: bikeProgress, arrived: driverArrivedLocal } = useEnRouteBikeProgress(state.driverAtLocation);
+  const driverArrived = driverArrivedLocal || state.driverAtLocation;
+
+  useEffect(() => {
+    if (driverArrivedLocal && !state.driverAtLocation) {
+      void setState({ driverAtLocation: true }, "Driver reached customer location");
+    }
+  }, [driverArrivedLocal, state.driverAtLocation, setState]);
 
   const slot = state.chosenSlot!;
   const driver = state.driver!;
@@ -190,7 +214,11 @@ export function DriverEnRouteScreen({
         </div>
 
         <div className="ad-driver-assigned-heading-row">
-          <h1 className="ad-driver-assigned-title">{driver.name} is enroute your location</h1>
+          <h1 className="ad-driver-assigned-title">
+            {driverArrived
+              ? `${driver.name} is at your location`
+              : `${driver.name} is on the way to your location`}
+          </h1>
           <div className="ad-driver-enroute-otp">
             <span className="ad-driver-assigned-otp-label">Ride OTP</span>
             <span className="ad-driver-enroute-otp-value">{otp}</span>
@@ -198,7 +226,7 @@ export function DriverEnRouteScreen({
         </div>
       </section>
 
-      <EnRouteLiveMap progress={bikeProgress} arrived={driverArrived} />
+      <EnRouteLiveMap progress={bikeProgress} arrived={driverArrived} driverName={driver.name} />
 
       <div className="ad-driver-assigned-card-group">
         <div className="ad-driver-assigned-card">

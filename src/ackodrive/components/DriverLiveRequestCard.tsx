@@ -8,6 +8,14 @@ import { publicAsset } from "../publicAsset";
 import { driverPlacedCall } from "../workflowActions";
 
 const DIVIDER = "/assets/figma/driver-request-divider.png";
+const CALL_DRIVER_ICON = "/assets/figma/call-driver-icon.png";
+
+function openCustomerDirections(address: string) {
+  const destination = address.trim();
+  if (!destination || destination === "—") return;
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 
 function formatDriverSlotTime(slot: NonNullable<DemoState["chosenSlot"]>): string {
   const date = new Date(`${slot.date}T00:00:00`);
@@ -163,7 +171,22 @@ export function DriverLiveRequestCard({
 
       <RequestDivider />
 
-      <RequestField label="Customer name" value={state.customerName || "—"} />
+      <RequestField
+        label="Customer name"
+        value={state.customerName || "—"}
+        action={
+          state.driverAtLocation ? (
+            <button
+              type="button"
+              className="ad-driver-request-call"
+              aria-label={`Call ${state.customerName || "customer"}`}
+              onClick={() => void driverPlacedCall(setState)}
+            >
+              <img src={publicAsset(CALL_DRIVER_ICON)} alt="" width={20} height={20} />
+            </button>
+          ) : undefined
+        }
+      />
       <RequestDivider />
       <RequestField label="Test drive slot" value={slotLabel} />
       <RequestDivider />
@@ -171,8 +194,12 @@ export function DriverLiveRequestCard({
         label="Customer address"
         value={<p className="ad-driver-request-address">{address}</p>}
         action={
-          <button type="button" className="ad-driver-request-edit">
-            Edit
+          <button
+            type="button"
+            className="ad-driver-request-edit"
+            onClick={() => openCustomerDirections(address)}
+          >
+            Get direction
           </button>
         }
       />
@@ -219,7 +246,25 @@ export function DriverLiveRequestCard({
             </>
           )}
 
-          {state.enRoute && !state.rideComplete && (
+          {state.enRoute && !state.rideComplete && !state.driverAtLocation && (
+            <>
+              <div className="ad-driver-request-action-copy-block">
+                <h3 className="ad-driver-request-action-title">Arrived at customer location?</h3>
+                <p className="ad-driver-request-action-copy">
+                  Mark arrival when you reach the pickup address to contact the customer.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="ad-driver-request-cta"
+                onClick={() => void setState({ driverAtLocation: true }, "Driver arrived at customer location")}
+              >
+                Arrived at location
+              </button>
+            </>
+          )}
+
+          {state.enRoute && !state.rideComplete && state.driverAtLocation && (
             <>
               <div className="ad-driver-request-action-copy-block">
                 <h3 className="ad-driver-request-action-title">Close ride</h3>
