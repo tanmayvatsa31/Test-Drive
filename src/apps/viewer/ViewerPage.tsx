@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { DeviceFrame } from "../../components/DeviceFrame";
 import { getAppUrls } from "../../ackodrive/appUrls";
 import { embedAppUrl } from "../../ackodrive/embedMode";
@@ -21,6 +21,8 @@ function ViewerPanel({ label, src }: { label: string; src: string }) {
 }
 
 export function ViewerPage() {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const adminLoginPath = isGitHubPagesDeploy() ? "#/login" : "/login";
 
   const panels = useMemo(() => {
@@ -32,16 +34,46 @@ export function ViewerPage() {
     ] as const;
   }, [adminLoginPath]);
 
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const inner = innerRef.current;
+    if (!stage || !inner) return;
+
+    const fitStage = () => {
+      inner.style.transform = "none";
+      const availableW = stage.clientWidth;
+      const availableH = stage.clientHeight;
+      const naturalW = inner.offsetWidth;
+      const naturalH = inner.offsetHeight;
+      if (!availableW || !availableH || !naturalW || !naturalH) return;
+
+      const scale = Math.min(1, availableW / naturalW, availableH / naturalH);
+      inner.style.transform = `scale(${scale})`;
+    };
+
+    fitStage();
+    const observer = new ResizeObserver(fitStage);
+    observer.observe(stage);
+    window.addEventListener("resize", fitStage);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", fitStage);
+    };
+  }, [panels]);
+
   return (
     <div className="demo-viewer">
       <header className="demo-viewer-header">
         <h1 className="demo-viewer-title">ACKO Drive Test drive demo</h1>
       </header>
 
-      <div className="demo-viewer-stage">
-        {panels.map((panel) => (
-          <ViewerPanel key={panel.id} label={panel.label} src={panel.src} />
-        ))}
+      <div className="demo-viewer-stage" ref={stageRef}>
+        <div className="demo-viewer-stage-inner" ref={innerRef}>
+          {panels.map((panel) => (
+            <ViewerPanel key={panel.id} label={panel.label} src={panel.src} />
+          ))}
+        </div>
       </div>
     </div>
   );

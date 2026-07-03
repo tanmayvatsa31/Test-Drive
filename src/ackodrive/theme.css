@@ -3453,26 +3453,35 @@ html.ad-embed #root {
   background: #fff;
 }
 
-/* Demo viewer — tri-mockup host (port 5176) */
+/* Demo viewer — tri-mockup host (port 5176), fits one screen without scroll */
+html[data-app="viewer"],
+html[data-app="viewer"] body,
+html[data-app="viewer"] #root {
+  height: 100%;
+  overflow: hidden;
+}
+
 .demo-viewer {
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 12px 20px 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  padding: 10px 12px 8px;
   background: linear-gradient(165deg, #f7f7f8 0%, #ececef 48%, #e2e2e8 100%);
-  overflow-x: auto;
 }
 
 .demo-viewer-header {
-  max-width: 1320px;
-  margin: 0 auto 8px;
+  flex-shrink: 0;
+  margin: 0 auto 4px;
   text-align: center;
 }
 
 .demo-viewer-title {
   margin: 0;
-  font-size: 22px;
+  font-size: clamp(18px, 2.2vw, 22px);
   font-weight: 600;
-  line-height: 28px;
+  line-height: 1.25;
   color: #121212;
 }
 
@@ -3492,15 +3501,25 @@ html.ad-embed #root {
 }
 
 .demo-viewer-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.demo-viewer-stage-inner {
   display: flex;
   flex-wrap: nowrap;
-  justify-content: center;
   align-items: flex-start;
-  gap: 28px;
-  width: max-content;
-  min-width: 100%;
-  margin: 0 auto;
-  padding-bottom: 24px;
+  justify-content: center;
+  gap: clamp(12px, 2vw, 28px);
+  transform-origin: center center;
+  will-change: transform;
 }
 
 .demo-viewer-column {
@@ -3533,22 +3552,12 @@ html.ad-embed #root {
   margin-top: 0;
 }
 
+.demo-viewer .iphone16-shadow {
+  display: none;
+}
+
 .demo-viewer-column .iphone16-app-root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
-
-@media (max-width: 1400px) {
-  .demo-viewer-stage {
-    transform: scale(0.88);
-    transform-origin: top center;
-  }
-}
-
-@media (max-width: 1200px) {
-  .demo-viewer-stage {
-    transform: scale(0.78);
-    transform-origin: top center;
-  }
 }
