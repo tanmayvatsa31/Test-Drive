@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import ackoDriveLogo from "../../ackodrive/assets/icons/acko-drive-logo.png";
+import { publicAsset } from "../../ackodrive/publicAsset";
 
-const SPLASH_BG_PHOTO = "/assets/driver-splash-bg.png";
+const SPLASH_BG_PHOTO = publicAsset("/assets/driver-splash-bg.png");
 
 export function DriverSplashScreen({
   children,

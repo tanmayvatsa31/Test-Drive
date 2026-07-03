@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { CustomerIntent } from "../customerIntent";
+import { publicAsset, publicAssetSrcSet } from "../publicAsset";
 
 /** Figma hero CTA — 48px height, 12px radius, 16px horizontal inset */
 const HERO_CTA_STYLE: CSSProperties = {
@@ -22,8 +23,11 @@ export function CustomerLandingHero({
     <section className="ad-hero ad-hero--device" aria-label="ACKO Drive hero">
       <div className="ad-hero-visual">
         <img
-          src="/assets/figma-hero-1200.png"
-          srcSet="/assets/figma-hero-1200.png 1200w, /assets/figma-hero-image.png 4096w"
+          src={publicAsset("/assets/figma-hero-1200.png")}
+          srcSet={publicAssetSrcSet([
+            { path: "/assets/figma-hero-1200.png", width: 1200 },
+            { path: "/assets/figma-hero-image.png", width: 4096 },
+          ])}
           sizes="100vw"
           alt="ACKO Drive — cars lined up for doorstep test drives"
           className="ad-hero-visual-img"

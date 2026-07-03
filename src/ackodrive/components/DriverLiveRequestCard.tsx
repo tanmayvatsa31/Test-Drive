@@ -4,9 +4,10 @@ import { BRAND_MODELS, DEALER, MODELS } from "../constants";
 import { findBrowseCar } from "../carsBrowseCatalog";
 import type { DemoState } from "../types";
 import type { SetStateFn } from "../workflowActions";
+import { publicAsset } from "../publicAsset";
 import { driverPlacedCall } from "../workflowActions";
 
-const DIVIDER = "/assets/figma/driver-request-divider.png";
+const DIVIDER = publicAsset("/assets/figma/driver-request-divider.png");
 
 function formatDriverSlotTime(slot: NonNullable<DemoState["chosenSlot"]>): string {
   const date = new Date(`${slot.date}T00:00:00`);
@@ -59,7 +60,7 @@ function RequestField({
   );
 }
 
-const LIVE_EMPTY_ILLUSTRATION = "/assets/figma/driver-requests-empty.svg";
+const LIVE_EMPTY_ILLUSTRATION = publicAsset("/assets/figma/driver-requests-empty.svg");
 
 export function DriverLiveRequestsEmpty() {
   return (

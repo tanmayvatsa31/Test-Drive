@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { AdminPortalLoginForm } from "../../ackodrive/components/AdminPortalLoginForm";
 import { setSession } from "../../ackodrive/auth";
 import { setPortalGateUser, setSuperadminView } from "../../ackodrive/portalGate";
+import { publicAsset } from "../../ackodrive/publicAsset";
 
-const ACKO_HORIZONTAL_LOGO = "/assets/acko-horizontal.png";
+const ACKO_HORIZONTAL_LOGO = publicAsset("/assets/acko-horizontal.png");
 
 /** Figma ADSC 5519:3827 — Superadmin Portal login */
 export function AdminLoginPage() {

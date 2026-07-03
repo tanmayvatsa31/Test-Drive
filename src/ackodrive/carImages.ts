@@ -1,5 +1,6 @@
-/** Local car hero images (sourced from Wikimedia Commons for demo use). */
-export const CAR_LISTING_IMAGES: Record<string, string> = {
+import { publicAsset } from "./publicAsset";
+
+const CAR_LISTING_PATHS: Record<string, string> = {
   "hyundai-creta": "/assets/cars/hyundai-creta.png",
   "kia-sonet": "/assets/cars/kia-sonet.png",
   "maruti-brezza": "/assets/cars/maruti-brezza.png",
@@ -17,6 +18,11 @@ export const CAR_LISTING_IMAGES: Record<string, string> = {
   "honda-city": "/assets/cars/honda-city.jpg",
   "toyota-innova-hycross": "/assets/cars/toyota-innova-hycross.jpg",
 };
+
+/** Local car hero images (sourced from Wikimedia Commons for demo use). */
+export const CAR_LISTING_IMAGES: Record<string, string> = Object.fromEntries(
+  Object.entries(CAR_LISTING_PATHS).map(([id, path]) => [id, publicAsset(path)]),
+);
 
 export function getCarListingImage(modelId: string): string | undefined {
   return CAR_LISTING_IMAGES[modelId];

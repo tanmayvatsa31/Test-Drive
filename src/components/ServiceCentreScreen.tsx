@@ -1,6 +1,7 @@
 import "./service-centre.css";
+import { publicAsset } from "../ackodrive/publicAsset";
 
-const ASSETS = "/assets/figma";
+const ASSETS = publicAsset("/assets/figma");
 
 const CAROUSEL = [
   {

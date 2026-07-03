@@ -6,10 +6,11 @@ import { insertCase } from "../hooks/useCases";
 import type { DemoState } from "../types";
 import type { SetStateFn } from "../workflowActions";
 import { driverPlacedCall } from "../workflowActions";
+import { publicAsset } from "../publicAsset";
 import { PrimaryButton } from "./ui";
 
-const DRIVER_ASSIGNED_ICON = "/assets/figma/driver-assigned-icon.png";
-const CALL_DRIVER_ICON = "/assets/figma/call-driver-icon.png";
+const DRIVER_ASSIGNED_ICON = publicAsset("/assets/figma/driver-assigned-icon.png");
+const CALL_DRIVER_ICON = publicAsset("/assets/figma/call-driver-icon.png");
 
 function formatAssignedSlotTime(slot: NonNullable<DemoState["chosenSlot"]>): string {
   const date = new Date(`${slot.date}T00:00:00`);

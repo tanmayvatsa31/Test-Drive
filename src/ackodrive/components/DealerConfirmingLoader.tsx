@@ -1,4 +1,6 @@
-const DEALER_WAITING_ILLUSTRATION = "/assets/figma/dealer-waiting-car.png";
+import { publicAsset } from "../publicAsset";
+
+const DEALER_WAITING_ILLUSTRATION = publicAsset("/assets/figma/dealer-waiting-car.png");
 
 const WAITING_MESSAGE = "Waiting for a nearby dealership to assign a driver";
 

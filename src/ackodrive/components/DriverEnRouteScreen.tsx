@@ -4,11 +4,12 @@ import { BRAND_MODELS, MODELS } from "../constants";
 import { findBrowseCar } from "../carsBrowseCatalog";
 import type { DemoState } from "../types";
 import type { SetStateFn } from "../workflowActions";
+import { publicAsset } from "../publicAsset";
 import { driverPlacedCall } from "../workflowActions";
 
-const CREW_ENROUTE_ICON = "/assets/figma/crew-member-enroute-icon.png";
-const ENROUTE_MAP = "/assets/figma/enroute-map.png";
-const CALL_DRIVER_ICON = "/assets/figma/call-driver-icon.png";
+const CREW_ENROUTE_ICON = publicAsset("/assets/figma/crew-member-enroute-icon.png");
+const ENROUTE_MAP = publicAsset("/assets/figma/enroute-map.png");
+const CALL_DRIVER_ICON = publicAsset("/assets/figma/call-driver-icon.png");
 
 /** Approximate route curve over the map screenshot (viewBox 0 0 320 117). */
 const ROUTE_PATH = "M 28 82 C 72 62, 108 52, 148 58 S 228 62, 292 48";
