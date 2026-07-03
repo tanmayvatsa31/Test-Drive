@@ -191,7 +191,8 @@ export function DriverLiveRequestCard({
   const slotLabel = slot ? formatDriverSlotTime(slot) : "—";
   const address = state.customerAddress?.trim() || "—";
   const customerName = state.customerName?.trim() || "—";
-  const showCustomerCall = state.enRoute && !state.rideComplete;
+  const showCustomerCall =
+    state.enRoute && !state.rideComplete && state.driverAtLocation;
 
   return (
     <article className="ad-driver-request-card">
