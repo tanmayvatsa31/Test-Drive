@@ -1935,7 +1935,7 @@
   background: #2a2a2a;
 }
 
-/* Dealer confirming loader — Figma 5505:4215 */
+/* Dealer confirming loader — Figma 5505:4215 (legacy) */
 .ad-dealer-waiting {
   display: flex;
   align-items: center;
@@ -1978,6 +1978,173 @@
   line-height: 24px;
   color: var(--ad-text-tertiary);
   word-break: break-word;
+}
+
+/* Test drive request in progress — Figma 5540:14103 */
+.ad-td-request-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--ad-surface-white);
+  box-sizing: border-box;
+}
+
+.ad-td-request-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 16px 14px;
+}
+
+.ad-td-request-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 4px 8px;
+  border: 1px solid #121212;
+  border-radius: 8px;
+  background: var(--ad-surface-white);
+  color: #121212;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ad-td-request-help img {
+  display: block;
+}
+
+.ad-td-request-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 20px 24px;
+}
+
+.ad-td-request-icon {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.ad-td-request-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ad-td-request-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  letter-spacing: -0.1px;
+  color: var(--ad-text-primary);
+}
+
+.ad-td-request-subtitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4b4b4b;
+}
+
+.ad-td-request-card {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  background: var(--ad-surface-white);
+}
+
+.ad-td-request-car {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ad-td-request-car-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--ad-text-primary);
+}
+
+.ad-td-request-car-price {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ad-text-primary);
+}
+
+.ad-td-request-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ad-td-request-slot-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #757575;
+}
+
+.ad-td-request-slot-value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #040222;
+}
+
+.ad-td-request-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #757575;
+  text-align: center;
+}
+
+.ad-td-request-footer {
+  padding: 12px 20px 20px;
+  background: var(--ad-surface-white);
+}
+
+.ad-td-request-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #121212;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ad-td-request-cta:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.ad-td-request-cta:not(:disabled):hover {
+  background: #2a2a2a;
 }
 
 /* Driver assigned — Figma 5508:3807 */

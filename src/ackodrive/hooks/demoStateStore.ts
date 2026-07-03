@@ -188,6 +188,11 @@ export async function patchSharedDemoState(patch: Partial<DemoState>, logMessage
   return next;
 }
 
+export async function refreshDemoState(): Promise<DemoState> {
+  await pollRemoteState();
+  return sharedState;
+}
+
 export async function resetSharedDemoState(): Promise<void> {
   const now = Date.now();
   sharedState = { ...INITIAL_STATE, lastUpdatedAt: now };

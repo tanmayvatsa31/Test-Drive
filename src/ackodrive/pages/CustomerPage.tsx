@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { PortalShell, RequireAuth, TurnBanner } from "../components/PortalShell";
 import { BookFreeConsultationForm } from "../components/BookFreeConsultationForm";
-import { DealerConfirmingLoader } from "../components/DealerConfirmingLoader";
+import { TestDriveRequestInProgressScreen } from "../components/TestDriveRequestInProgressScreen";
 import { DriverAssignedScreen } from "../components/DriverAssignedScreen";
 import { DriverEnRouteScreen } from "../components/DriverEnRouteScreen";
 import { IncomingDriverCallScreen } from "../components/IncomingDriverCallScreen";
@@ -45,7 +45,7 @@ function CustomerPageLayout() {
   const hasSelectedCarFromListing = getSelectedCar() != null;
 
   if (loaded && shouldShowDealerConfirmingLoader(state, hasSelectedCarFromListing)) {
-    return <DealerConfirmingLoader />;
+    return <TestDriveRequestInProgressScreen state={state} />;
   }
 
   if (loaded && shouldShowIncomingDriverCallScreen(state, hasSelectedCarFromListing)) {
