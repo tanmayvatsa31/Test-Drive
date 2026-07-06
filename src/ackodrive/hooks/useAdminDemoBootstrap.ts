@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { isEmbedMode } from "../embedMode";
-import { APP_URLS, getDemoFlowTabs } from "../appUrls";
+import { APP_URLS, getDemoFlowTabs, isGitHubPagesDeploy } from "../appUrls";
 import {
   checkDemoPortHealth,
   demoTabsBlockedNotification,
@@ -22,6 +22,8 @@ export function useAdminDemoBootstrap(push: PushNotification) {
     started.current = true;
 
     const run = async () => {
+      if (isGitHubPagesDeploy()) return;
+
       const portIssues = await checkDemoPortHealth();
       portIssues.forEach(push);
 

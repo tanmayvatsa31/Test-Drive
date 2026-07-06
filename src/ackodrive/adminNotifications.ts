@@ -1,4 +1,4 @@
-import { APP_URLS } from "./appUrls";
+import { APP_URLS, isGitHubPagesDeploy } from "./appUrls";
 import type { DemoState } from "./types";
 
 export type AdminNotificationTone = "info" | "success" | "warn" | "error";
@@ -18,6 +18,8 @@ const DEMO_PORTS: { id: string; label: string; url: string }[] = [
 ];
 
 export async function checkDemoPortHealth(): Promise<AdminNotification[]> {
+  if (isGitHubPagesDeploy()) return [];
+
   const at = Date.now();
   const checks = await Promise.all(
     DEMO_PORTS.map(async ({ id, label, url }): Promise<AdminNotification | null> => {

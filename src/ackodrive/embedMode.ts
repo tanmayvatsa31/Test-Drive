@@ -4,6 +4,10 @@ export function isEmbedMode(): boolean {
   return new URLSearchParams(window.location.search).get("embed") === "1";
 }
 
+function embedCacheBust(): string {
+  return import.meta.env.VITE_BUILD_ID ?? "dev";
+}
+
 export function applyEmbedDocumentClass(): void {
   if (isEmbedMode()) {
     document.documentElement.classList.add("ad-embed");
@@ -11,10 +15,13 @@ export function applyEmbedDocumentClass(): void {
 }
 
 export function embedAppUrl(base: string, path = ""): string {
+  const cacheBust = embedCacheBust();
+
   if (path.startsWith("#")) {
     const [baseWithoutQuery, query = ""] = base.split("?");
     const params = new URLSearchParams(query);
     params.set("embed", "1");
+    params.set("v", cacheBust);
     return `${baseWithoutQuery}?${params.toString()}${path}`;
   }
 
@@ -24,5 +31,6 @@ export function embedAppUrl(base: string, path = ""): string {
     url.pathname = `${url.pathname.replace(/\/$/, "")}${suffix}`;
   }
   url.searchParams.set("embed", "1");
+  url.searchParams.set("v", cacheBust);
   return url.toString();
 }

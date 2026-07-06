@@ -3662,8 +3662,31 @@ html[data-app="viewer"] #root {
 
 .demo-viewer-header {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   margin: 0 auto 4px;
   text-align: center;
+}
+
+.demo-viewer-refresh {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #e0e0e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #121212;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.demo-viewer-refresh:hover {
+  background: #f7f7f8;
 }
 
 .demo-viewer-title {

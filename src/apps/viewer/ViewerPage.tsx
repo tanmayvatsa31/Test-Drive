@@ -1,15 +1,15 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DeviceFrame } from "../../components/DeviceFrame";
-import { getAppUrls } from "../../ackodrive/appUrls";
+import { getAppUrls, isGitHubPagesDeploy } from "../../ackodrive/appUrls";
 import { embedAppUrl } from "../../ackodrive/embedMode";
-import { isGitHubPagesDeploy } from "../../ackodrive/AppRouter";
 
-function ViewerPanel({ label, src }: { label: string; src: string }) {
+function ViewerPanel({ label, src, reloadKey }: { label: string; src: string; reloadKey: number }) {
   return (
     <div className="demo-viewer-column">
       <p className="demo-viewer-label">{label}</p>
       <DeviceFrame>
         <iframe
+          key={`${label}-${reloadKey}`}
           className="demo-viewer-iframe"
           src={src}
           title={`${label} app`}
@@ -23,6 +23,7 @@ function ViewerPanel({ label, src }: { label: string; src: string }) {
 export function ViewerPage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const adminLoginPath = isGitHubPagesDeploy() ? "#/login" : "/login";
 
   const panels = useMemo(() => {
@@ -32,7 +33,7 @@ export function ViewerPage() {
       { id: "driver", label: "Driver", src: embedAppUrl(urls.driver) },
       { id: "admin", label: "Superadmin", src: embedAppUrl(urls.admin, adminLoginPath) },
     ] as const;
-  }, [adminLoginPath]);
+  }, [adminLoginPath, reloadKey]);
 
   useLayoutEffect(() => {
     const stage = stageRef.current;
@@ -66,12 +67,19 @@ export function ViewerPage() {
     <div className="demo-viewer">
       <header className="demo-viewer-header">
         <h1 className="demo-viewer-title">ACKO Drive Test drive demo</h1>
+        <button
+          type="button"
+          className="demo-viewer-refresh"
+          onClick={() => setReloadKey((current) => current + 1)}
+        >
+          Refresh apps
+        </button>
       </header>
 
       <div className="demo-viewer-stage" ref={stageRef}>
         <div className="demo-viewer-stage-inner" ref={innerRef}>
           {panels.map((panel) => (
-            <ViewerPanel key={panel.id} label={panel.label} src={panel.src} />
+            <ViewerPanel key={panel.id} label={panel.label} src={panel.src} reloadKey={reloadKey} />
           ))}
         </div>
       </div>

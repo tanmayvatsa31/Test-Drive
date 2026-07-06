@@ -24,6 +24,10 @@ const ENTRY = ENTRIES[TARGET];
 const PORT = PORTS[TARGET];
 
 const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
+const buildId =
+  process.env.GITHUB_SHA?.slice(0, 7) ??
+  process.env.VITE_BUILD_ID ??
+  "dev";
 const pagesBase =
   process.env.VITE_BASE_PATH ??
   (process.env.GITHUB_ACTIONS && repoName ? `/${repoName}/` : "/");
@@ -79,6 +83,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), pagesBaseTag(pagesBase), spaFallback(ENTRY)],
   define: {
     "import.meta.env.VITE_APP_TARGET": JSON.stringify(TARGET),
+    "import.meta.env.VITE_BUILD_ID": JSON.stringify(buildId),
   },
   server: {
     host: "127.0.0.1",

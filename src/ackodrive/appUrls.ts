@@ -78,7 +78,7 @@ export function getDemoFlowTabs(): DemoFlowTab[] {
   ];
 }
 
-function isGitHubPagesDeploy(): boolean {
+export function isGitHubPagesDeploy(): boolean {
   if (import.meta.env.VITE_GITHUB_PAGES === "true") return true;
   return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
 }
