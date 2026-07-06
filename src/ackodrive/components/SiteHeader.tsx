@@ -1,10 +1,19 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { isCustomerApp } from "../appMode";
 import { HEADER_CITIES } from "../constants";
 import chevronDownIcon from "../assets/icons/chevron-down.png";
 import ackoDriveLogo from "../assets/icons/acko-drive-logo.png";
 
-function AckoDriveLogo() {
+function BrandLogo() {
+  if (isCustomerApp) {
+    return (
+      <Link to="/" className="ad-site-logo" aria-label="Your brand home">
+        <span className="ad-site-brand-logo">Your Brand Logo</span>
+      </Link>
+    );
+  }
+
   return (
     <Link to="/" className="ad-site-logo" aria-label="ACKO Drive home">
       <img
@@ -136,7 +145,7 @@ export function SiteHeader({
     <header className="ad-site-header" ref={headerRef}>
       <div className="ad-site-header-inner">
         <div className="ad-site-header-left">
-          <AckoDriveLogo />
+          <BrandLogo />
           <span className="ad-site-divider" aria-hidden="true" />
           <LocationPicker
             city={city}

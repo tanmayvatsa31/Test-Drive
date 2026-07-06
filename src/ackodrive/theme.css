@@ -1094,6 +1094,18 @@
   width: auto;
 }
 
+.ad-site-brand-logo {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  color: #fff;
+  white-space: nowrap;
+}
+
 .ad-site-divider {
   display: none;
   width: 1px;

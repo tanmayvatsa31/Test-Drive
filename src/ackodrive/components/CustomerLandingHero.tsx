@@ -20,7 +20,7 @@ export function CustomerLandingHero({
   onIntent: (intent: CustomerIntent) => void;
 }) {
   return (
-    <section className="ad-hero ad-hero--device" aria-label="ACKO Drive hero">
+    <section className="ad-hero ad-hero--device" aria-label="Customer landing hero">
       <div className="ad-hero-visual">
         <img
           src={publicAsset("/assets/figma-hero-1200.png")}
@@ -37,13 +37,13 @@ export function CustomerLandingHero({
 
       <div className="ad-hero-copy ad-hero-copy--device">
         <div className="ad-hero-text-block">
-          <h1 className="ad-hero-title">Car buying, redefined</h1>
+          <h1 className="ad-hero-title">Looking for a new car?</h1>
           <p className="ad-hero-subtitle">
-            Best prices, doorstep test drives, and a buying experience built around you.
+            Test drive and check before you buy with ACKO Drive.
           </p>
           <p className="ad-hero-body">
-            Explore curated new cars, book a free doorstep test drive, or lock in your deal — all in one
-            place. No haggling, no hidden fees, just clear pricing and expert support from ACKO Drive.
+            Book a free doorstep test ride at your location, experience the car on your terms, and decide
+            with confidence — clear pricing and expert support every step of the way.
           </p>
         </div>
 
