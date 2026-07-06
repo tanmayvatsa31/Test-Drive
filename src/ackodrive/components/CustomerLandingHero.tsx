@@ -47,22 +47,14 @@ export function CustomerLandingHero({
           </p>
         </div>
 
-        <div className="ad-hero-cta-row ad-hero-cta-row--stack">
+        <div className="ad-hero-cta-row">
           <button
             type="button"
             onClick={() => onIntent("testride")}
             className="ad-hero-cta"
             style={HERO_CTA_STYLE}
           >
-            Book a test drive
-          </button>
-          <button
-            type="button"
-            onClick={() => onIntent("purchase")}
-            className="ad-hero-cta ad-hero-cta-secondary"
-            style={HERO_CTA_STYLE}
-          >
-            Buy new car
+            I want to test drive
           </button>
         </div>
       </div>
