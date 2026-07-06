@@ -56,7 +56,7 @@ export function CarListingCard({
         </div>
 
         <button type="button" className="ad-car-listing-cta" onClick={onBookTestDrive}>
-          Book a test drive
+          I want to test drive
         </button>
       </div>
     </article>

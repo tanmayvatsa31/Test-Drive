@@ -9,8 +9,13 @@ function embedCacheBust(): string {
 }
 
 export function applyEmbedDocumentClass(): void {
-  if (isEmbedMode()) {
-    document.documentElement.classList.add("ad-embed");
+  if (!isEmbedMode()) return;
+
+  document.documentElement.classList.add("ad-embed");
+
+  const meta = document.querySelector('meta[name="viewport"]');
+  if (meta) {
+    meta.setAttribute("content", "width=393, initial-scale=1, viewport-fit=cover");
   }
 }
 

@@ -517,6 +517,18 @@ body:has(.app-canvas--device) #root {
   grid-template-columns: 1fr;
 }
 
+/* Browse cars — viewport media queries use browser width inside mockups; keep single column. */
+.iphone16-app-root .ad-cars-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.iphone16-app-root .ad-car-listing-card {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
 .iphone16-viewport::-webkit-scrollbar {
   display: none;
 }
