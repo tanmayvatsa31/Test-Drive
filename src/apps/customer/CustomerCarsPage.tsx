@@ -3,26 +3,32 @@ import { useNavigate } from "react-router-dom";
 import { CarListingCard } from "../../ackodrive/components/CarListingCard";
 import { CustomerAppShell } from "../../ackodrive/components/CustomerAppShell";
 import { RequireAuth } from "../../ackodrive/components/PortalShell";
-import { getBrowseCars } from "../../ackodrive/carsBrowseCatalog";
+import {
+  BROWSE_BRAND_FILTERS,
+  getBrowseCars,
+  type BrowseBrandFilterId,
+  type BrowseCar,
+} from "../../ackodrive/carsBrowseCatalog";
 import { setCustomerIntent, setSelectedCar } from "../../ackodrive/customerIntent";
-import type { BrowseCar } from "../../ackodrive/carsBrowseCatalog";
 
 function CarsContent() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [expressOnly, setExpressOnly] = useState(false);
+  const [brandFilter, setBrandFilter] = useState<BrowseBrandFilterId | null>(null);
 
   const cars = useMemo(() => getBrowseCars(), []);
 
   const filteredCars = useMemo(() => {
     const q = query.trim().toLowerCase();
     return cars.filter((car) => {
+      if (brandFilter && car.brandId !== brandFilter) return false;
       if (expressOnly && !car.expressDelivery) return false;
       if (!q) return true;
       const haystack = `${car.brandName} ${car.modelName} ${car.fuel}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [cars, expressOnly, query]);
+  }, [brandFilter, cars, expressOnly, query]);
 
   const handleBookTestDrive = (car: BrowseCar) => {
     setCustomerIntent("testride");
@@ -32,6 +38,10 @@ function CarsContent() {
       variant: car.defaultVariant,
     });
     navigate("/app");
+  };
+
+  const toggleBrand = (brandId: BrowseBrandFilterId) => {
+    setBrandFilter((current) => (current === brandId ? null : brandId));
   };
 
   return (
@@ -46,18 +56,30 @@ function CarsContent() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Which car are you looking for?"
-            className="field-input"
+            className="ad-cars-search-input"
           />
         </label>
 
         <div className="ad-cars-filters">
-          <button
-            type="button"
-            className={`ad-chip ${expressOnly ? "ad-chip-active" : ""}`}
-            onClick={() => setExpressOnly((v) => !v)}
-          >
-            Express Delivery
-          </button>
+          <div className="ad-cars-filters-chips">
+            <button
+              type="button"
+              className={`ad-cars-filter-chip${expressOnly ? " ad-cars-filter-chip--active" : ""}`}
+              onClick={() => setExpressOnly((value) => !value)}
+            >
+              Express Delivery
+            </button>
+            {BROWSE_BRAND_FILTERS.map((brand) => (
+              <button
+                key={brand.id}
+                type="button"
+                className={`ad-cars-filter-chip${brandFilter === brand.id ? " ad-cars-filter-chip--active" : ""}`}
+                onClick={() => toggleBrand(brand.id)}
+              >
+                {brand.label}
+              </button>
+            ))}
+          </div>
           <span className="ad-cars-count">{filteredCars.length} cars</span>
         </div>
       </div>
@@ -65,8 +87,8 @@ function CarsContent() {
       <div className="ad-cars-main">
         {filteredCars.length === 0 ? (
           <div className="ad-card-flat ad-cars-empty">
-            <p className="ad-label">No cars match your search</p>
-            <p className="ad-caption mt-1">Try a different name or turn off Express Delivery.</p>
+            <p className="ad-label">No cars match your filters</p>
+            <p className="ad-caption mt-1">Try another brand or clear Express Delivery.</p>
           </div>
         ) : (
           <div className="ad-cars-grid">

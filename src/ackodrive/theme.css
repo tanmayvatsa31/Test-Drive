@@ -2828,50 +2828,106 @@
 }
 
 .ad-cars-toolbar {
-  padding: 16px 0 12px;
+  padding: 20px 0 16px;
   background: var(--ad-surface-white);
 }
 
 @media (min-width: 640px) {
   .ad-cars-toolbar {
-    padding: 24px clamp(16px, 8.33vw, 120px) 16px;
-    border-bottom: 1px solid var(--ad-border-subtle);
+    padding: 24px 0 20px;
   }
 }
 
 .ad-cars-title {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   font-size: 20px;
   font-weight: 600;
   line-height: 28px;
   letter-spacing: -0.1px;
-  color: var(--ad-text-primary);
+  color: #121212;
 }
 
 @media (min-width: 640px) {
   .ad-cars-title {
-    margin-bottom: 16px;
-    font-size: clamp(22px, 3.5vw, 28px);
-    line-height: 1.25;
+    font-size: 22px;
+    line-height: 30px;
   }
 }
 
 .ad-cars-search {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.ad-cars-search-input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #121212;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.ad-cars-search-input::placeholder {
+  color: #757575;
+}
+
+.ad-cars-search-input:focus {
+  border-color: #121212;
 }
 
 .ad-cars-filters {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ad-cars-filters-chips {
+  display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-cars-filter-chip {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #121212;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ad-cars-filter-chip--active {
+  border-color: #121212;
+  background: #121212;
+  color: #fff;
 }
 
 .ad-cars-count {
-  margin-left: auto;
+  flex-shrink: 0;
+  padding-top: 6px;
   font-size: 12px;
-  color: var(--ad-text-tertiary);
+  line-height: 18px;
+  color: #757575;
+  white-space: nowrap;
 }
 
 .ad-cars-main {

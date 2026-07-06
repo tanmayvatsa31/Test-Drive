@@ -23,156 +23,105 @@ export type BrowseCar = BrowseCarSeed & {
   imageUrl: string;
 };
 
+/** Demo browse catalog — Volkswagen & Skoda line-ups for brand filtering. */
 const BROWSE_CAR_SEEDS: BrowseCarSeed[] = [
   {
-    modelId: "hyundai-creta",
-    brandId: "hyundai",
-    fuel: "Petrol • Diesel",
+    modelId: "vw-virtus",
+    brandId: "vw",
+    fuel: "Petrol",
     transmission: "Manual • Automatic",
-    rating: 8.4,
-    highlight: "Most Viewed",
-    expressDelivery: true,
-    savingsLabel: "₹16,610",
-  },
-  {
-    modelId: "kia-sonet",
-    brandId: "kia",
-    fuel: "Petrol • Diesel",
-    transmission: "Manual • Automatic",
-    rating: 8.1,
-    expressDelivery: true,
-    savingsLabel: "₹16,225",
-  },
-  {
-    modelId: "maruti-brezza",
-    brandId: "maruti",
-    fuel: "Petrol • CNG",
-    transmission: "Manual • Automatic",
-    rating: 7.5,
-    expressDelivery: true,
-    savingsLabel: "₹12,598",
-  },
-  {
-    modelId: "maruti-grand-vitara",
-    brandId: "maruti",
-    fuel: "Hybrid • Petrol • CNG",
-    transmission: "Manual • Automatic",
-    rating: 7.6,
-    expressDelivery: true,
-    savingsLabel: "₹13,328",
-  },
-  {
-    modelId: "mahindra-scorpio-n",
-    brandId: "mahindra",
-    fuel: "Petrol • Diesel",
-    transmission: "Manual • Automatic",
-    expressDelivery: true,
-    savingsLabel: "₹26,884",
-  },
-  {
-    modelId: "tata-nexon",
-    brandId: "tata",
-    fuel: "Petrol • Diesel • CNG",
-    transmission: "Manual • Automatic",
-    rating: 7.8,
-    highlight: "Best Seller",
-    expressDelivery: true,
-    savingsLabel: "₹16,133",
-  },
-  {
-    modelId: "tata-nexon-ev",
-    brandId: "tata",
-    fuel: "Electric",
-    transmission: "Automatic",
-    expressDelivery: true,
-    savingsLabel: "₹46,247",
-  },
-  {
-    modelId: "tata-curvv-ev",
-    brandId: "tata",
-    fuel: "Electric",
-    transmission: "Automatic",
     rating: 8.2,
-    expressDelivery: true,
-    savingsLabel: "₹26,975",
-  },
-  {
-    modelId: "tata-harrier-ev",
-    brandId: "tata",
-    fuel: "Electric",
-    transmission: "Automatic",
-    rating: 8.0,
-    expressDelivery: true,
-    savingsLabel: "₹31,200",
-  },
-  {
-    modelId: "tata-sierra",
-    brandId: "tata",
-    fuel: "Petrol • Diesel",
-    transmission: "Manual • Automatic",
-    rating: 7.9,
+    highlight: "Most Viewed",
     expressDelivery: true,
     savingsLabel: "₹18,400",
   },
   {
-    modelId: "tata-punch-ev",
-    brandId: "tata",
-    fuel: "Electric",
-    transmission: "Automatic",
-    expressDelivery: true,
-    savingsLabel: "₹14,800",
-  },
-  {
-    modelId: "maruti-swift",
-    brandId: "maruti",
-    fuel: "Petrol • CNG",
-    transmission: "Manual • Automatic",
-    rating: 8.1,
-    expressDelivery: true,
-    savingsLabel: "₹9,628",
-  },
-  {
-    modelId: "hyundai-venue",
-    brandId: "hyundai",
-    fuel: "Petrol • Diesel",
-    transmission: "Manual • Automatic",
-    rating: 7.7,
-    expressDelivery: true,
-    savingsLabel: "₹11,450",
-  },
-  {
-    modelId: "kia-seltos",
-    brandId: "kia",
-    fuel: "Petrol • Diesel",
+    modelId: "vw-taigun",
+    brandId: "vw",
+    fuel: "Petrol",
     transmission: "Manual • Automatic",
     rating: 8.0,
     expressDelivery: true,
-    savingsLabel: "₹15,900",
+    savingsLabel: "₹17,250",
   },
   {
-    modelId: "honda-city",
-    brandId: "honda",
+    modelId: "vw-tiguan",
+    brandId: "vw",
+    fuel: "Petrol",
+    transmission: "Automatic",
+    rating: 8.4,
+    expressDelivery: true,
+    savingsLabel: "₹42,800",
+  },
+  {
+    modelId: "vw-id4",
+    brandId: "vw",
+    fuel: "Electric",
+    transmission: "Automatic",
+    rating: 8.6,
+    expressDelivery: true,
+    savingsLabel: "₹58,000",
+  },
+  {
+    modelId: "skoda-kushaq",
+    brandId: "skoda",
     fuel: "Petrol",
     transmission: "Manual • Automatic",
-    rating: 8.2,
-    savingsLabel: "₹22,100",
+    rating: 8.1,
+    highlight: "Best Seller",
+    expressDelivery: true,
+    savingsLabel: "₹16,900",
   },
   {
-    modelId: "toyota-innova-hycross",
-    brandId: "toyota",
-    fuel: "Hybrid • Petrol",
+    modelId: "skoda-slavia",
+    brandId: "skoda",
+    fuel: "Petrol",
     transmission: "Manual • Automatic",
     rating: 8.3,
-    savingsLabel: "₹28,500",
+    expressDelivery: true,
+    savingsLabel: "₹17,100",
+  },
+  {
+    modelId: "skoda-octavia",
+    brandId: "skoda",
+    fuel: "Petrol",
+    transmission: "Manual • Automatic",
+    rating: 8.5,
+    expressDelivery: true,
+    savingsLabel: "₹24,600",
+  },
+  {
+    modelId: "skoda-kodiaq",
+    brandId: "skoda",
+    fuel: "Petrol • Diesel",
+    transmission: "Automatic",
+    rating: 8.4,
+    expressDelivery: true,
+    savingsLabel: "₹38,200",
+  },
+  {
+    modelId: "skoda-superb",
+    brandId: "skoda",
+    fuel: "Petrol",
+    transmission: "Automatic",
+    rating: 8.7,
+    expressDelivery: true,
+    savingsLabel: "₹32,500",
   },
 ];
+
+export const BROWSE_BRAND_FILTERS = [
+  { id: "vw", label: "Volkswagen" },
+  { id: "skoda", label: "Skoda" },
+] as const;
+
+export type BrowseBrandFilterId = (typeof BROWSE_BRAND_FILTERS)[number]["id"];
 
 export function getBrowseCars(): BrowseCar[] {
   return BROWSE_CAR_SEEDS.flatMap((seed) => {
     const model = BRAND_MODELS.find((m) => m.id === seed.modelId);
     const brand = CAR_BRANDS.find((b) => b.id === seed.brandId);
-    const imageUrl = getCarListingImage(seed.modelId);
-    if (!model || !brand || !imageUrl) return [];
+    if (!model || !brand) return [];
 
     return [
       {
@@ -182,7 +131,7 @@ export function getBrowseCars(): BrowseCar[] {
         price: model.price,
         variantCount: model.variants.length,
         defaultVariant: model.variants[0] ?? "Base",
-        imageUrl,
+        imageUrl: getCarListingImage(seed.modelId),
       },
     ];
   });
