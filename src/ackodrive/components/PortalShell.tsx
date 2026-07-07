@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { getSession, clearSession } from "../auth";
 import { isCustomerApp, isDriverApp, isAdminApp, loginPathForRole } from "../appMode";
+import { currentAppPath, redirectToAppRoute } from "../appUrls";
 import { CustomerAppShell } from "./CustomerAppShell";
 import { DriverAppShell } from "./DriverAppShell";
 import { AuthLoading } from "./AuthLoading";
@@ -60,7 +61,7 @@ export function PortalShell({
                 <button
                   onClick={() => {
                     clearSession(role);
-                    window.location.href = loginPath;
+                    redirectToAppRoute(loginPath);
                   }}
                   className="text-[10px] text-white/60 underline hover:text-white/90"
                 >
@@ -89,8 +90,8 @@ export function RequireAuth({ role, children }: { role: Role; children: ReactNod
       const session = getSession(role);
       if (!session) {
         setOk(false);
-        if (window.location.pathname !== loginPath) {
-          window.location.replace(loginPath);
+        if (currentAppPath() !== loginPath) {
+          redirectToAppRoute(loginPath);
         }
       } else {
         setOk(true);

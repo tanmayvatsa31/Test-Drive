@@ -83,6 +83,29 @@ export function isGitHubPagesDeploy(): boolean {
   return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
 }
 
+/** Current in-app route — hash path on GitHub Pages, pathname locally. */
+export function currentAppPath(): string {
+  if (typeof window === "undefined") return "/";
+  if (isGitHubPagesDeploy()) {
+    const hash = window.location.hash.replace(/^#/, "");
+    return hash.startsWith("/") ? hash : hash ? `/${hash}` : "/";
+  }
+  return window.location.pathname;
+}
+
+/** Full navigation target for an in-app route on the current HTML entry. */
+export function appRouteHref(path: string): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  if (isGitHubPagesDeploy() && typeof window !== "undefined") {
+    return `${window.location.pathname}${window.location.search}#${normalized}`;
+  }
+  return normalized;
+}
+
+export function redirectToAppRoute(path: string): void {
+  window.location.assign(appRouteHref(path));
+}
+
 /** Public login URL for the OEM Data Sheet portal. */
 export function getOemDataSheetLoginUrl(): string {
   const admin = getAppUrls().admin.replace(/\/$/, "");

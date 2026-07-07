@@ -6,6 +6,7 @@ import { useAdminNotificationFeed } from "../../ackodrive/hooks/useAdminNotifica
 import { useSlaWatchdog } from "../../ackodrive/hooks/useSlaWatchdog";
 import { clearPortalGate, getPortalGateUser } from "../../ackodrive/portalGate";
 import { clearSession, formatIndianMobile } from "../../ackodrive/auth";
+import { redirectToAppRoute } from "../../ackodrive/appUrls";
 
 export function AdminConsolePage() {
   const gateUser = getPortalGateUser();
@@ -19,7 +20,7 @@ export function AdminConsolePage() {
   const handleSignOut = () => {
     clearPortalGate();
     clearSession();
-    window.location.href = "/login";
+    redirectToAppRoute("/login");
   };
 
   return (
