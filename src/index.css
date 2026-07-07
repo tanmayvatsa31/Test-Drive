@@ -315,8 +315,8 @@ body:has(.app-canvas--device) #root {
   justify-content: flex-start;
   align-items: center;
   gap: 10px;
-  /* Island: top 13px + height 37px → content starts 10px below */
-  padding: 60px 20px 12px;
+  /* Island: top 13px + height 37px + 12px gap */
+  padding: 62px 20px 12px;
 }
 
 .iphone16-app-root .ad-driver-splash-title {

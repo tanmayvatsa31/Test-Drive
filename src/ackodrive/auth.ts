@@ -4,6 +4,7 @@ import type { Role, Session } from "./types";
 const STORAGE_KEY = "ackodrive_sessions_v1";
 const LEGACY_STORAGE_KEY = "ackodrive_session_v1";
 const ACKO_DOMAINS = ["acko.com", "acko.tech"];
+export const LOGIN_EPOCH_KEY = "ackodrive_login_epoch";
 
 type SessionStore = Partial<Record<Role, Session>>;
 
@@ -41,6 +42,11 @@ export function setSession(session: Session): void {
   const store = loadStore();
   store[session.role] = session;
   saveStore(store);
+  // Stamp a login epoch so propensity scores re-roll on each new login.
+  // Only write if not already set (preserves score within the same session).
+  if (!sessionStorage.getItem(LOGIN_EPOCH_KEY)) {
+    sessionStorage.setItem(LOGIN_EPOCH_KEY, String(Date.now()));
+  }
 }
 
 export function clearSession(role?: Role): void {
@@ -48,10 +54,15 @@ export function clearSession(role?: Role): void {
     const store = loadStore();
     delete store[role];
     saveStore(store);
+    // Clear epoch only when fully logged out (no roles remain).
+    if (!Object.values(loadStore()).some(Boolean)) {
+      sessionStorage.removeItem(LOGIN_EPOCH_KEY);
+    }
     return;
   }
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(LEGACY_STORAGE_KEY);
+  sessionStorage.removeItem(LOGIN_EPOCH_KEY);
   window.dispatchEvent(new Event("ackodrive_session_changed"));
 }
 

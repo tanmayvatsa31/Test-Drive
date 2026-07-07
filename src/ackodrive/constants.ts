@@ -5,6 +5,7 @@ export const DEMO_OTP = "123456";
 export const BOOKING_AMOUNT = 25_000;
 export const MASKED_LINE = "+91 80 4718 ••22";
 export const SHIVI_LINE = "+91 80 4718 0000";
+export const SHIVI_CALLER_NAME = "Shivi ACKO";
 export const SLOT_HOLD_MS = 5 * 60 * 1000;
 export const EN_ROUTE_SLA_MS = 3 * 60 * 1000;
 

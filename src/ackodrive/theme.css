@@ -151,8 +151,15 @@
   gap: 14px;
   min-height: 0;
   padding: 24px 24px 16px;
-  padding-top: calc(24px + env(safe-area-inset-top, 0px));
+  /* 12px below safe area (status bar / dynamic island on device) */
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
   text-align: center;
+}
+
+/* Viewer iframe: parent mockup paints the dynamic island over the iframe (no safe-area). */
+html.ad-embed[data-app="driver"] .ad-driver-splash-hero-content {
+  /* Island top 13px + height 37px + 12px gap */
+  padding-top: 62px;
 }
 
 .ad-driver-splash-logo {
@@ -2649,7 +2656,8 @@
   flex-direction: column;
   min-height: 100dvh;
   padding: 0 20px 40px;
-  background: var(--ad-surface-white);
+  background: #ffffff;
+  color: #111827;
   box-sizing: border-box;
 }
 
@@ -2702,6 +2710,8 @@
   width: auto;
   object-fit: contain;
   margin-top: 4px;
+  /* force logo visible on white background */
+  filter: brightness(0);
 }
 
 .ad-incoming-call-body {
@@ -2721,7 +2731,7 @@
   font-weight: 600;
   line-height: 40px;
   letter-spacing: -0.2px;
-  color: var(--ad-text-primary);
+  color: #111827;
 }
 
 .ad-incoming-call-status {
@@ -2729,7 +2739,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
-  color: var(--ad-text-secondary);
+  color: #374151;
 }
 
 .ad-incoming-call-controls {
@@ -2774,7 +2784,14 @@
   color: var(--ad-text-primary);
 }
 
-.ad-incoming-call-primary {
+.ad-incoming-call-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 56px;
+}
+
+.ad-incoming-call-action {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2799,27 +2816,29 @@
   background: #15803d;
 }
 
+.ad-incoming-call-reject-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border: none;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+
+.ad-incoming-call-reject-btn:hover {
+  background: #b91c1c;
+}
+
 .ad-incoming-call-primary-label {
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
-  color: var(--ad-text-primary);
-}
-
-.ad-incoming-call-reject {
-  margin: 0;
-  padding: 8px 16px;
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
-  color: #dc2626;
-  cursor: pointer;
-}
-
-.ad-incoming-call-reject:hover {
-  text-decoration: underline;
+  color: #111827;
 }
 
 .ad-cars-page {
@@ -3323,6 +3342,109 @@ html.ad-embed .ad-cars-grid {
   }
 }
 
+.ad-lead-initiate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.ad-lead-closure-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface-light);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ad-text-secondary);
+}
+
+.ad-lead-progress-note {
+  color: var(--ad-text-tertiary);
+  font-style: italic;
+}
+
+.ad-propensity-high,
+.ad-propensity-low {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+}
+
+.ad-propensity-high {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.ad-propensity-low {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.ad-lead-date-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ad-lead-date-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ad-lead-date-picker {
+  display: block;
+}
+
+.ad-lead-date-picker-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ad-border-default);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface-white);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ad-text-primary);
+  box-sizing: border-box;
+}
+
+.ad-lead-date-section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ad-border-default);
+}
+
+.ad-lead-date-section-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--ad-text-primary);
+}
+
+.ad-lead-date-section-count {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ad-text-tertiary);
+  white-space: nowrap;
+}
+
 /* ─── Admin Superadmin login (Figma ADSC 5519:3827) ─────────────────── */
 
 .ad-admin-login-page {
@@ -3401,14 +3523,16 @@ html.ad-embed .ad-cars-grid {
 
 .ad-admin-login-input {
   width: 100%;
-  padding: 12px 16px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 16px;
   border: 1px solid var(--ad-border-default);
   border-radius: 8px;
   background: var(--ad-surface-light);
   font-family: inherit;
   font-size: 16px;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 1;
   color: var(--ad-text-primary);
   box-sizing: border-box;
   outline: none;
@@ -3427,10 +3551,10 @@ html.ad-embed .ad-cars-grid {
 
 .ad-admin-login-input--otp {
   text-align: center;
-  font-family: ui-monospace, monospace;
-  font-size: 20px;
+  font-family: inherit;
+  font-size: 16px;
   font-weight: 500;
-  letter-spacing: 0.35em;
+  letter-spacing: normal;
 }
 
 .ad-admin-login-hint {
@@ -3475,18 +3599,20 @@ html.ad-embed .ad-cars-grid {
 }
 
 .ad-admin-login-submit {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 16px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 12px;
   border: 1px solid var(--ad-border-default);
   border-radius: 8px;
   background: var(--ad-surface-dark);
   font-family: inherit;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 1;
   color: var(--ad-text-white);
   cursor: pointer;
   box-sizing: border-box;

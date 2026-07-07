@@ -32,6 +32,28 @@ export function useLeads() {
   return { leads, loading, refresh };
 }
 
+/** Leads that are still in the pipeline (not completed or rejected). */
+export function hasOpenLeads(leads: Lead[]): boolean {
+  return leads.some((lead) => lead.status !== "completed" && lead.status !== "rejected");
+}
+
+export async function findOpenLeadForCustomer(phone: string, modelId: string): Promise<Lead | null> {
+  const digits = phone.replace(/\D/g, "").slice(-10);
+  const { data } = await supabase
+    .from("leads")
+    .select("*")
+    .in("status", ["new", "contacted"])
+    .eq("model_id", modelId)
+    .order("created_at", { ascending: false })
+    .limit(25);
+
+  if (!data?.length) return null;
+
+  return (
+    (data as Lead[]).find((lead) => lead.phone.replace(/\D/g, "").slice(-10) === digits) ?? null
+  );
+}
+
 export async function insertLead(payload: {
   name: string;
   phone: string;
@@ -54,4 +76,8 @@ export async function insertLead(payload: {
 
 export async function updateLeadStatus(id: string, status: string) {
   return supabase.from("leads").update({ status }).eq("id", id);
+}
+
+export async function deleteAllLeads() {
+  return supabase.from("leads").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 }

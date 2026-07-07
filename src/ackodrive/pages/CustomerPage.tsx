@@ -5,6 +5,7 @@ import { TestDriveRequestInProgressScreen } from "../components/TestDriveRequest
 import { DriverAssignedScreen } from "../components/DriverAssignedScreen";
 import { DriverEnRouteScreen } from "../components/DriverEnRouteScreen";
 import { IncomingDriverCallScreen } from "../components/IncomingDriverCallScreen";
+import { IncomingShiviCallScreen } from "../components/IncomingShiviCallScreen";
 import { isCustomerSchedulingSlot, ScheduleTestRideScreen } from "../components/ScheduleTestRideScreen";
 import { TestRideReminder } from "../components/TestRideReminder";
 import { Badge, Card, PrimaryButton } from "../components/ui";
@@ -29,6 +30,7 @@ import {
   shouldShowDriverAssignedScreen,
   shouldShowDriverEnRouteScreen,
   shouldShowIncomingDriverCallScreen,
+  shouldShowIncomingShiviCallScreen,
 } from "../workflow";
 import { bookDriverTiedSlot } from "../workflowActions";
 
@@ -42,6 +44,10 @@ export function CustomerPage() {
 
 function CustomerPageLayout() {
   const { state, setState, loaded } = useDemoState();
+
+  if (loaded && shouldShowIncomingShiviCallScreen(state)) {
+    return <IncomingShiviCallScreen state={state} setState={setState} />;
+  }
 
   if (loaded && shouldShowDealerConfirmingLoader(state)) {
     return <TestDriveRequestInProgressScreen state={state} />;
@@ -73,6 +79,9 @@ function CustomerContent() {
 
   const session = getSession("customer");
   const hasSelectedCarFromListing = getSelectedCar() != null;
+
+  // Show the booking form whenever: no active journey, OR customer arrived fresh from car listing.
+  // clearSelectedCar() is called on submit so this condition becomes false right after submit.
   const showBookingForm =
     !hasActiveTestRideIncident(state) ||
     (hasSelectedCarFromListing && !state.leadSent && !state.chosenSlot);
@@ -156,9 +165,17 @@ function CustomerContent() {
         </p>
       </Card>
 
-      {!state.shiviCallInitiated && <WaitingCard name={state.customerName} />}
+      {!state.shiviCallInitiated && (
+        <WaitingCard name={state.customerName || "there"} />
+      )}
 
-      {state.shiviCallInitiated && !state.qualification && (
+      {state.shiviCallRejected && !state.shiviCallAnswered && (
+        <Card>
+          <p className="text-sm">You declined the call from Shivi. Waiting for a callback…</p>
+        </Card>
+      )}
+
+      {state.shiviCallAnswered && state.shiviCallInitiated && !state.qualification && (
         <QualificationCard name={state.customerName} onPick={(q) => void setState({ qualification: q }, `Shivi: customer is ${q}`)} />
       )}
 

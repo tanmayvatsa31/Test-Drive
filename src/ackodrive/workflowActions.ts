@@ -1,15 +1,21 @@
 import type { DemoState } from "./types";
 import {
   buildOemInitiatePatch,
+  buildCustomerLeadPatch,
   appendPrivacyAudit,
   deriveStaticOtp,
   markDriverBusy,
   markDriverAvailable,
   pickNextDriver,
+  buildCustomerJourneyResetPatch,
+  INITIAL_DRIVER_ROSTER,
+  maskPhone,
 } from "./workflow";
-import { updateLeadStatus } from "./hooks/useLeads";
+import { updateLeadStatus, deleteAllLeads } from "./hooks/useLeads";
+import { insertCase } from "./hooks/useCases";
+import { resetSharedDemoState, patchSharedDemoState } from "./hooks/demoStateStore";
 import type { Lead } from "./types";
-import { EN_ROUTE_SLA_MS, SLOT_HOLD_MS } from "./constants";
+import { EN_ROUTE_SLA_MS, SLOT_HOLD_MS, DEALER, MODELS, BRAND_MODELS } from "./constants";
 import { clearCustomerSessionPrefs, getCustomerIntent, type CustomerIntent } from "./customerIntent";
 
 export type SetStateFn = (patch: Partial<DemoState>, logMessage?: string) => Promise<void>;
@@ -24,30 +30,74 @@ export async function startCustomerJourney(
   setState: SetStateFn,
   lead: Lead & { variant?: string },
   intentOverride?: CustomerIntent | null,
+  currentState?: DemoState,
 ): Promise<void> {
-  const intent = intentOverride ?? getCustomerIntent();
-  const patch = buildOemInitiatePatch({
-    id: lead.id,
-    name: lead.name,
-    phone: lead.phone,
-    address: lead.address,
-    pincode: lead.pincode,
-    model_id: lead.model_id,
-  });
-  if (lead.model_name?.includes("·")) {
+  const intent = intentOverride ?? getCustomerIntent() ?? "testride";
+
+  if (currentState?.leadId === lead.id) {
+    const patch: Partial<DemoState> = {
+      customerName: lead.name,
+      customerPhone: maskPhone(lead.phone),
+      customerPhoneRaw: lead.phone,
+      customerAddress: lead.address ?? "—",
+      pincode: lead.pincode ?? currentState.pincode,
+      model: lead.model_id,
+      variant: lead.variant ?? currentState.variant,
+    };
+    if (intent === "testride") {
+      patch.qualification = currentState.qualification ?? "undecided";
+      patch.testrideAccepted = true;
+    } else if (intent === "purchase") {
+      patch.qualification = "qualified";
+    }
+    await setState(patch, `Customer updated test drive — ${lead.name}`);
+    return;
+  }
+
+  const patch = buildCustomerLeadPatch(
+    {
+      id: lead.id,
+      name: lead.name,
+      phone: lead.phone,
+      address: lead.address,
+      pincode: lead.pincode,
+      model_id: lead.model_id,
+    },
+    { variant: lead.variant ?? null },
+  );
+  if (lead.model_name?.includes("·") && !patch.variant) {
     const variantPart = lead.model_name.split("·").pop()?.trim();
     if (variantPart) patch.variant = variantPart;
   }
-  const qualification = qualificationForIntent(intent);
-  if (qualification) {
-    patch.qualification = qualification;
-  }
   if (intent === "testride") {
+    patch.qualification = "undecided";
     patch.testrideAccepted = true;
+  } else if (intent === "purchase") {
+    patch.qualification = "qualified";
   }
-  const logSuffix = qualification ? ` (${intent} intent)` : "";
-  await setState(patch, `ML flagged ${lead.name} — journey started${logSuffix}`);
-  clearCustomerSessionPrefs();
+  await setState(patch, `Customer booked test drive — ${lead.name}`);
+}
+
+export async function initiateShiviCallFromOem(
+  setState: SetStateFn,
+  state: DemoState,
+  lead: Lead,
+): Promise<void> {
+  if (state.leadId === lead.id && state.customerName) {
+    await setState(
+      {
+        shiviCallInitiated: true,
+        shiviCallPlaced: true,
+        shiviCallAnswered: false,
+        shiviCallRejected: false,
+        mlFlagged: true,
+      },
+      `OEM initiated Shivi call → ${lead.name}`,
+    );
+  } else {
+    const patch = buildOemInitiatePatch(lead);
+    await setState(patch, `OEM initiated Shivi call → ${lead.name}`);
+  }
   await updateLeadStatus(lead.id, "contacted");
 }
 
@@ -123,6 +173,33 @@ export async function customerRejectDriverCall(setState: SetStateFn): Promise<vo
   );
 }
 
+export async function customerPickShiviCall(setState: SetStateFn, state?: DemoState): Promise<void> {
+  const patch: Partial<DemoState> = {
+    shiviCallAnswered: true,
+    shiviCallPlaced: false,
+    shiviCallRejected: false,
+  };
+  if (!state?.qualification) {
+    const intent = getCustomerIntent() ?? "testride";
+    const qualification = qualificationForIntent(intent);
+    if (qualification) {
+      patch.qualification = qualification;
+      if (intent === "testride") {
+        patch.testrideAccepted = true;
+      }
+    }
+  }
+  clearCustomerSessionPrefs();
+  await setState(patch, "Customer picked Shivi call");
+}
+
+export async function customerRejectShiviCall(setState: SetStateFn): Promise<void> {
+  await setState(
+    { shiviCallPlaced: false, shiviCallRejected: true },
+    "Customer rejected Shivi call",
+  );
+}
+
 export async function handleSlaBreach(setState: SetStateFn, state: DemoState): Promise<boolean> {
   if (!state.callPlaced || state.enRoute || state.rideComplete || !state.enRouteDeadline) return false;
   if (Date.now() <= state.enRouteDeadline) return false;
@@ -155,4 +232,74 @@ export async function handleSlaBreach(setState: SetStateFn, state: DemoState): P
     "E3: Escalated to dealer — no drivers available",
   );
   return true;
+}
+
+export async function rejectLead(setState: SetStateFn, state: DemoState): Promise<void> {
+  if (state.leadId) {
+    await updateLeadStatus(state.leadId, "rejected");
+  }
+  await setState(
+    buildCustomerJourneyResetPatch(
+      "Your test drive request was declined. You can pick another car and book again.",
+    ),
+    `Dealer rejected lead from ${state.customerName}`,
+  );
+}
+
+export async function deleteAllLeadsAndResetDemo(): Promise<void> {
+  await deleteAllLeads();
+  await resetSharedDemoState();
+  await patchSharedDemoState(
+    {
+      customerNotifyMessage: "Demo reset — you can start a new test drive from the customer app.",
+      driverRoster: INITIAL_DRIVER_ROSTER,
+    },
+    "Dealer deleted all leads and reset demo",
+  );
+}
+
+export async function closeLeadAsCompleted(setState: SetStateFn, state: DemoState): Promise<void> {
+  const catalogModel = BRAND_MODELS.find((m) => m.id === state.model);
+  const model = MODELS.find((m) => m.id === state.model);
+  const modelLabel = model?.name ?? catalogModel?.name ?? state.model ?? "Car";
+  const slot = state.chosenSlot;
+  const driver = state.driver;
+
+  if (!state.caseSaved && slot && driver) {
+    await insertCase({
+      flow_type: "testride",
+      status: "completed",
+      customer_name: state.customerName,
+      pincode: state.pincode,
+      phone_masked: state.customerPhone,
+      model: modelLabel,
+      variant: state.variant,
+      slot: `${slot.label} · ${slot.time}`,
+      date_class: state.dateClass,
+      dealer: DEALER.name,
+      driver_name: driver.name,
+      driver_reg: driver.reg,
+      otp: state.otp,
+      on_road_price: null,
+      rating: null,
+      feedback: "Closed by dealer",
+    });
+  }
+
+  if (state.leadId) {
+    await updateLeadStatus(state.leadId, "completed");
+  }
+
+  const roster = state.driver ? markDriverAvailable(state.driverRoster, state.driver.id) : state.driverRoster;
+
+  await setState(
+    {
+      caseSaved: true,
+      leadClosed: true,
+      driver: null,
+      driverRoster: roster,
+      customerNotifyMessage: "Your test drive is complete. Thank you!",
+    },
+    `Dealer marked lead completed and closed for ${state.customerName}`,
+  );
 }

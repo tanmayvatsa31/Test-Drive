@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BRAND_MODELS, DEALER, MODELS } from "../constants";
 import { findBrowseCar } from "../carsBrowseCatalog";
 import { insertCase } from "../hooks/useCases";
+import { updateLeadStatus } from "../hooks/useLeads";
 import type { DemoState } from "../types";
 import type { SetStateFn } from "../workflowActions";
 import { driverPlacedCall } from "../workflowActions";
@@ -152,7 +153,7 @@ export function DriverAssignedScreen({
         </section>
       )}
 
-      {state.rideComplete && state.rating == null && (
+      {state.rideComplete && state.rating == null && !state.leadClosed && (
         <section className="ad-driver-assigned-followup">
           <p className="ad-driver-assigned-followup-title">How was your test ride?</p>
           <div className="ad-driver-assigned-stars">
@@ -199,6 +200,9 @@ export function DriverAssignedScreen({
                   feedback,
                 });
                 await setState({ caseSaved: true });
+                if (state.leadId) {
+                  await updateLeadStatus(state.leadId, "completed");
+                }
               }
             }}
           >

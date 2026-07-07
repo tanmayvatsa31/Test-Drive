@@ -19,6 +19,9 @@ export const INITIAL_STATE: DemoState = {
   customerPhoneRaw: "",
   customerAddress: "",
   shiviCallInitiated: false,
+  shiviCallPlaced: false,
+  shiviCallAnswered: false,
+  shiviCallRejected: false,
   mlFlagged: false,
   leadId: null,
   qualification: null,
@@ -55,6 +58,7 @@ export const INITIAL_STATE: DemoState = {
   rating: null,
   feedback: null,
   caseSaved: false,
+  leadClosed: false,
   driverReminderSent: false,
   otpOverride: null,
   privacyAudit: [],
@@ -132,6 +136,16 @@ export function shouldShowDriverEnRouteScreen(state: DemoState): boolean {
   return state.enRoute && !state.rideComplete;
 }
 
+/** Full-screen incoming Shivi call — only after OEM initiates from portal. */
+export function shouldShowIncomingShiviCallScreen(state: DemoState): boolean {
+  return (
+    state.shiviCallInitiated &&
+    state.shiviCallPlaced &&
+    !state.shiviCallAnswered &&
+    !state.shiviCallRejected
+  );
+}
+
 /** Full-screen incoming masked call — before driver assigned content. */
 export function shouldShowIncomingDriverCallScreen(state: DemoState): boolean {
   if (!shouldShowDriverAssignedScreen(state)) return false;
@@ -149,7 +163,7 @@ export function shouldShowDriverAssignedScreen(state: DemoState): boolean {
 export function hasActiveTestRideIncident(state: DemoState): boolean {
   if (!state.leadId && !state.shiviCallInitiated) return false;
   if (state.qualification === "qualified" && state.bookingPaid) return false;
-  if (state.rating != null) return false;
+  if (state.rating != null || state.leadClosed) return false;
   return true;
 }
 
@@ -166,6 +180,9 @@ export function isEnRouteSlaBreached(state: DemoState): boolean {
 export type NextActor = "customer" | "dealer" | "driver" | "done";
 
 export function getNextActor(state: DemoState): NextActor {
+  if (state.shiviCallPlaced && !state.shiviCallAnswered && !state.shiviCallRejected) {
+    return "customer";
+  }
   if (!state.qualification) {
     return state.shiviCallInitiated ? "customer" : "done";
   }
@@ -190,7 +207,7 @@ export function getNextActor(state: DemoState): NextActor {
   if (!state.callPlaced) return "driver";
   if (!state.custConfirmed) return "customer";
   if (!state.enRoute || !state.rideComplete) return "driver";
-  if (state.rating == null) return "customer";
+  if (state.rating == null && !state.leadClosed) return "customer";
   return "done";
 }
 
@@ -211,7 +228,7 @@ export function getFlowSteps(state: DemoState): FlowStep[] {
     { id: "call", label: "Masked call", done: state.callPlaced },
     { id: "track", label: "En route tracking", done: state.enRoute },
     { id: "close", label: "Ride closed", done: state.rideComplete },
-    { id: "feedback", label: "Customer feedback", done: state.rating != null },
+    { id: "feedback", label: "Customer feedback", done: state.rating != null || state.leadClosed },
   ];
   const activeId =
     !state.shiviCallInitiated
@@ -228,7 +245,7 @@ export function getFlowSteps(state: DemoState): FlowStep[] {
                 ? "track"
                 : !state.rideComplete
                   ? "close"
-                  : state.rating == null
+                  : state.rating == null && !state.leadClosed
                     ? "feedback"
                     : "feedback";
 
@@ -340,6 +357,54 @@ export function markDriverAvailable(roster: DriverRosterEntry[], driverId: strin
   );
 }
 
+/** Clears an in-progress test-ride journey so the customer can book again. */
+export function buildCustomerJourneyResetPatch(
+  customerNotifyMessage: string,
+): Partial<DemoState> {
+  return {
+    customerNotifyMessage,
+    leadSent: false,
+    dealerAccepted: false,
+    dealerAcknowledged: false,
+    chosenSlot: null,
+    slotHoldExpiresAt: null,
+    bookingDate: null,
+    dateClass: null,
+    dealerConfirmRequired: false,
+    calendarFree: null,
+    altOptions: [],
+    customerReconfirmed: false,
+    driver: null,
+    customerOtpStatic: null,
+    otp: null,
+    callPlaced: false,
+    callRejected: false,
+    custConfirmed: false,
+    enRoute: false,
+    driverAtLocation: false,
+    rideComplete: false,
+    enRouteDeadline: null,
+    reassignmentCount: 0,
+    leadId: null,
+    shiviCallInitiated: false,
+    shiviCallPlaced: false,
+    shiviCallAnswered: false,
+    shiviCallRejected: false,
+    mlFlagged: false,
+    qualification: null,
+    testrideAccepted: false,
+    model: null,
+    variant: null,
+    rating: null,
+    feedback: null,
+    caseSaved: false,
+    leadClosed: false,
+    driverReminderSent: false,
+    dealerEscalated: false,
+    selectedDealerCode: null,
+  };
+}
+
 export function pincodeDistanceLabel(pincode: string): string {
   const p = parseInt(pincode, 10);
   if (Number.isNaN(p)) return "2.1 km";
@@ -382,6 +447,46 @@ export function generateDriverTiedSlots(
   });
 }
 
+export function buildCustomerLeadPatch(
+  lead: {
+    id: string;
+    name: string;
+    phone: string;
+    address: string | null;
+    pincode: string | null;
+    model_id: string | null;
+  },
+  extras?: { variant?: string | null },
+): Partial<DemoState> {
+  const masked = maskPhone(lead.phone);
+  const staticOtp = deriveStaticOtp(lead.phone);
+  return {
+    ...INITIAL_STATE,
+    customerName: lead.name,
+    customerPhone: masked,
+    customerPhoneRaw: lead.phone,
+    customerAddress: lead.address ?? "—",
+    pincode: lead.pincode ?? "560034",
+    model: lead.model_id,
+    variant: extras?.variant ?? null,
+    leadId: lead.id,
+    mlFlagged: true,
+    shiviCallInitiated: false,
+    shiviCallPlaced: false,
+    shiviCallAnswered: false,
+    shiviCallRejected: false,
+    customerOtpStatic: staticOtp,
+    driverRoster: INITIAL_DRIVER_ROSTER.map((d) => ({ ...d })),
+    privacyAudit: appendPrivacyAudit(
+      [],
+      "Customer booked test drive — lead sent to OEM pipeline",
+      "customer",
+      false,
+    ),
+    log: [],
+  };
+}
+
 export function buildOemInitiatePatch(lead: {
   id: string;
   name: string;
@@ -401,6 +506,9 @@ export function buildOemInitiatePatch(lead: {
     pincode: lead.pincode ?? "560034",
     model: lead.model_id,
     shiviCallInitiated: true,
+    shiviCallPlaced: true,
+    shiviCallAnswered: false,
+    shiviCallRejected: false,
     mlFlagged: true,
     leadId: lead.id,
     customerOtpStatic: staticOtp,

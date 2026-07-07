@@ -1,18 +1,31 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { DEALERSHIPS, MODELS, BRAND_MODELS } from "../constants";
 import { openApp } from "../appUrls";
+import {
+  canInitiateShiviCall,
+  dedupeLeadsForPipeline,
+  filterLeadsByDate,
+  formatLeadFilterHeading,
+  getClosedLeadFeedback,
+  isLeadClosed,
+  isLeadInProgress,
+  leadStatusBadgeTone,
+  leadStatusLabel,
+  propensityScore,
+  propensityLabel,
+  todayIsoDate,
+  type LeadDateFilter,
+} from "../leadPipeline";
+import { LOGIN_EPOCH_KEY } from "../auth";
 import { PortalShell, RequireAuth } from "../components/PortalShell";
-import { FlowStepper } from "../components/FlowStepper";
-import { DemoChecklist } from "../components/DemoChecklist";
-import { CaseList } from "../components/CaseList";
 import { Badge, Card, TabButton } from "../components/ui";
 import { useCases } from "../hooks/useCases";
 import { useDemoState } from "../hooks/useDemoState";
 import { useSlaWatchdog } from "../hooks/useSlaWatchdog";
-import { useLeads, updateLeadStatus } from "../hooks/useLeads";
-import type { CaseRecord, Lead } from "../types";
-import { getNextActor, maskPhone, buildOemInitiatePatch } from "../workflow";
+import { useLeads } from "../hooks/useLeads";
+import type { Lead } from "../types";
+import { maskPhone } from "../workflow";
+import { initiateShiviCallFromOem } from "../workflowActions";
 
 export function MasterPage() {
   return (
@@ -25,21 +38,23 @@ export function MasterPage() {
 }
 
 function MasterContent() {
-  const { state, setState, reset, loaded } = useDemoState();
-  const { cases } = useCases();
+  const { state, setState, loaded } = useDemoState();
   const { leads } = useLeads();
-  const [tab, setTab] = useState<"leads" | "live" | "dealers" | "history">("leads");
+  const { cases } = useCases();
+  const [dateFilter, setDateFilter] = useState<LeadDateFilter>("today");
+  const [customDate, setCustomDate] = useState(todayIsoDate);
   useSlaWatchdog();
+
+  const filteredLeads = useMemo(() => {
+    const byDate = filterLeadsByDate(leads, dateFilter, customDate);
+    return dedupeLeadsForPipeline(byDate);
+  }, [customDate, dateFilter, leads]);
+  const filterHeading = formatLeadFilterHeading(dateFilter, customDate);
 
   if (!loaded) return <div className="ad-caption p-8 text-center">Loading…</div>;
 
-  const next = getNextActor(state);
-  const model = MODELS.find((m) => m.id === state.model) ?? BRAND_MODELS.find((m) => m.id === state.model);
-
   const initiateCall = async (lead: Lead) => {
-    const patch = buildOemInitiatePatch(lead);
-    await setState(patch, `OEM initiated Shivi call → ${lead.name}`);
-    await updateLeadStatus(lead.id, "contacted");
+    await initiateShiviCallFromOem(setState, state, lead);
   };
 
   return (
@@ -54,161 +69,130 @@ function MasterContent() {
         <Link to="/dealer" className="ad-btn-secondary !text-[11px] sm:!text-xs">
           Dealer portal
         </Link>
-        <button
-          onClick={() => confirm("Reset the live demo?") && void reset()}
-          className="ad-btn-secondary !w-full !border-red-200 !text-red-700 sm:!ml-auto sm:!w-auto"
-        >
-          Reset demo
-        </button>
       </div>
 
-
-      <TabBar tab={tab} setTab={setTab} leads={leads} cases={cases} />
-
-      {tab === "leads" && (
-        <Card>
-          <div className="mb-2 flex items-center justify-between">
-            <div className="ad-overline">Lead pipeline</div>
-            <Badge tone="info">live</Badge>
-          </div>
-          {!leads.length && (
-            <p className="ad-caption text-center">
-              No leads yet. Customer submits via the{" "}
-              <button type="button" onClick={() => openApp("customer")} className="font-medium underline">
-                customer app
-              </button>
-              .
-            </p>
-          )}
-          <ul className="divide-y divide-[var(--ad-border-default)]">
-            {leads.map((lead) => (
-              <li key={lead.id} className="ad-lead-row gap-3 py-2.5">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="ad-label text-sm">{lead.name}</span>
-                    <Badge tone={lead.status === "new" ? "warn" : "ok"}>{lead.status}</Badge>
-                  </div>
-                  <div className="ad-caption break-words">
-                    {maskPhone(lead.phone)} · 📍 {lead.pincode} · {lead.model_name}
-                  </div>
-                </div>
-                <button onClick={() => void initiateCall(lead)} className="ad-btn-primary !w-full shrink-0 !px-3 !py-2 !text-xs sm:!w-auto">
-                  📞 Initiate Shivi call
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      {tab === "dealers" && (
-        <Card>
-          <div className="ad-overline mb-2">Dealerships</div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {DEALERSHIPS.map((d) => (
-              <div key={d.code} className="ad-card-flat !mb-0 !p-3">
-                <div className="flex items-center justify-between">
-                  <span className="ad-label text-sm">{d.name}</span>
-                  <Badge tone={d.active ? "live" : "ok"}>{d.active ? `${d.active} active` : "idle"}</Badge>
-                </div>
-                <div className="ad-caption">{d.city} · ⭐ {d.rating} · 🚗 {d.drivers} drivers</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {tab === "live" && (
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <div>
-            <Card>
-              <div className="ad-overline">Act next on</div>
-              <div className="ad-display mt-1 text-lg">
-                {state.shiviCallInitiated ? (next === "done" ? "✅ Flow complete" : `${next.toUpperCase()} screen`) : "⏸ Waiting — customer form or initiate Shivi"}
-              </div>
-            </Card>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <FlowStepper state={state} />
-              <DemoChecklist />
-            </div>
-            <Card className="mt-4">
-              <div className="ad-overline mb-2">Privacy audit</div>
-              <ul className="max-h-40 space-y-1 overflow-auto text-[11px]">
-                {state.privacyAudit.length === 0 && <li className="ad-caption">No events yet</li>}
-                {state.privacyAudit.map((e, i) => (
-                  <li key={i}>
-                    {new Date(e.t).toLocaleTimeString("en-IN")} · {e.event} ({e.actor})
-                  </li>
-                ))}
-              </ul>
-            </Card>
-            <Card className="mt-4">
-              <div className="ad-overline mb-2">Event log</div>
-              <ul className="max-h-72 space-y-1 overflow-auto text-[11px]">
-                {[...state.log].reverse().map((e, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="font-mono text-[var(--ad-text-disabled)]">{new Date(e.t).toLocaleTimeString("en-IN")}</span>
-                    <span className="text-[var(--ad-text-secondary)]">{e.m}</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          </div>
-          <Card>
-            <div className="ad-overline mb-2">Live state</div>
-            <dl className="space-y-1 text-xs">
-              <Row k="Customer" v={state.customerName} />
-              <Row k="Phone" v={state.customerPhone} />
-              <Row k="Qualification" v={state.qualification ?? "—"} />
-              <Row k="Model" v={model ? `${model.name} · ${state.variant ?? "—"}` : "—"} />
-              <Row k="Static OTP" v={state.customerOtpStatic ?? "—"} />
-              <Row k="Ride OTP" v={state.otp ?? "—"} />
-              <Row k="Driver" v={state.driver ? `${state.driver.name}` : "—"} />
-              <Row k="Notify" v={state.customerNotifyMessage ?? "—"} />
-              <Row k="Rating" v={state.rating == null ? "—" : `⭐ ${state.rating}/5`} />
-            </dl>
-          </Card>
+      <Card>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="ad-overline">Lead pipeline</div>
+          <Badge tone="info">live</Badge>
         </div>
-      )}
 
-      {tab === "history" && <CaseList cases={cases} />}
+        <div className="ad-lead-date-filter">
+          <div className="ad-lead-date-filter-tabs">
+            {(
+              [
+                { id: "today" as const, label: "Today" },
+                { id: "yesterday" as const, label: "Yesterday" },
+                { id: "custom" as const, label: "Choose date" },
+              ] as const
+            ).map((option) => (
+              <TabButton
+                key={option.id}
+                active={dateFilter === option.id}
+                onClick={() => setDateFilter(option.id)}
+                className="flex-1 !text-xs sm:flex-none"
+              >
+                {option.label}
+              </TabButton>
+            ))}
+          </div>
+
+          {dateFilter === "custom" && (
+            <label className="ad-lead-date-picker">
+              <span className="sr-only">Choose date</span>
+              <input
+                type="date"
+                value={customDate}
+                max={todayIsoDate()}
+                onChange={(e) => setCustomDate(e.target.value)}
+                className="ad-lead-date-picker-input"
+              />
+            </label>
+          )}
+        </div>
+
+        <div className="ad-lead-date-section">
+          <h2 className="ad-lead-date-section-title">{filterHeading}</h2>
+          <span className="ad-lead-date-section-count">
+            {filteredLeads.length} lead{filteredLeads.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        {!leads.length && (
+          <p className="ad-caption text-center">
+            No leads yet. Customer submits via the{" "}
+            <button type="button" onClick={() => openApp("customer")} className="font-medium underline">
+              customer app
+            </button>
+            .
+          </p>
+        )}
+
+        {leads.length > 0 && filteredLeads.length === 0 && (
+          <p className="ad-caption py-4 text-center">No leads for {filterHeading.toLowerCase()}.</p>
+        )}
+
+        <ul className="divide-y divide-[var(--ad-border-default)]">
+          {filteredLeads.map((lead) => (
+            <LeadPipelineRow
+              key={lead.id}
+              lead={lead}
+              cases={cases}
+              activeLeadId={state.leadId}
+              onInitiate={() => void initiateCall(lead)}
+            />
+          ))}
+        </ul>
+      </Card>
     </>
   );
 }
 
-function TabBar({
-  tab,
-  setTab,
-  leads,
+function LeadPipelineRow({
+  lead,
   cases,
+  activeLeadId,
+  onInitiate,
 }: {
-  tab: string;
-  setTab: (t: "leads" | "live" | "dealers" | "history") => void;
-  leads: Lead[];
-  cases: CaseRecord[];
+  lead: Lead;
+  cases: ReturnType<typeof useCases>["cases"];
+  activeLeadId: string | null;
+  onInitiate: () => void;
 }) {
-  const tabs = [
-    { id: "leads" as const, label: `📋 Leads (${leads.filter((l) => l.status === "new").length})` },
-    { id: "live" as const, label: "🎯 Live flow" },
-    { id: "dealers" as const, label: `🏢 Dealerships (${DEALERSHIPS.length})` },
-    { id: "history" as const, label: `🗂️ All cases (${cases.length})` },
-  ];
-  return (
-    <div className="mb-3 flex flex-wrap gap-2">
-      {tabs.map((t) => (
-        <TabButton key={t.id} active={tab === t.id} onClick={() => setTab(t.id)} className="flex-1 sm:flex-none">
-          {t.label}
-        </TabButton>
-      ))}
-    </div>
-  );
-}
+  const closed = isLeadClosed(lead, cases, activeLeadId);
+  const showInitiate = canInitiateShiviCall(lead, cases, activeLeadId);
+  const inProgress = isLeadInProgress(lead, cases, activeLeadId);
 
-function Row({ k, v }: { k: string; v: React.ReactNode }) {
+  const loginEpoch = Number(sessionStorage.getItem(LOGIN_EPOCH_KEY) ?? "0");
+  const score = propensityScore(lead.phone, loginEpoch);
+  const label = propensityLabel(score);
+
   return (
-    <div className="flex justify-between gap-2 border-b border-[var(--ad-border-default)] pb-1">
-      <dt className="text-[var(--ad-text-tertiary)]">{k}</dt>
-      <dd className="text-right font-medium text-[var(--ad-text-primary)]">{v}</dd>
-    </div>
+    <li className="ad-lead-row gap-3 py-2.5">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="ad-label text-sm">{lead.name}</span>
+          <Badge tone={leadStatusBadgeTone(lead, cases, activeLeadId)}>
+            {leadStatusLabel(lead, cases, activeLeadId)}
+          </Badge>
+        </div>
+        <div className="ad-caption break-words">
+          {maskPhone(lead.phone)} · 📍 {lead.pincode} · {lead.model_name}
+        </div>
+        <div className="ad-caption mt-0.5 flex items-center gap-1.5">
+          <span>Propensity score: {score.toFixed(1)}</span>
+          <span className={score >= 3 ? "ad-propensity-high" : "ad-propensity-low"}>{label}</span>
+        </div>
+      </div>
+      {showInitiate ? (
+        <button type="button" onClick={onInitiate} className="ad-btn-primary ad-lead-initiate-btn !w-full shrink-0 sm:!w-auto">
+          📞 Initiate Shivi call
+        </button>
+      ) : closed ? (
+        <p className="ad-lead-closure-note">{getClosedLeadFeedback(lead, cases)}</p>
+      ) : inProgress ? (
+        <p className="ad-lead-closure-note ad-lead-progress-note">Shivi call in progress — customer journey active</p>
+      ) : null}
+    </li>
   );
 }

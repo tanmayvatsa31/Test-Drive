@@ -69,6 +69,9 @@ export interface DemoState {
   customerPhoneRaw: string;
   customerAddress: string;
   shiviCallInitiated: boolean;
+  shiviCallPlaced: boolean;
+  shiviCallAnswered: boolean;
+  shiviCallRejected: boolean;
   mlFlagged: boolean;
   leadId: string | null;
   qualification: Qualification | null;
@@ -105,6 +108,8 @@ export interface DemoState {
   rating: number | null;
   feedback: string | null;
   caseSaved: boolean;
+  /** Dealer closed the ride without waiting for customer feedback. */
+  leadClosed: boolean;
   driverReminderSent: boolean;
   otpOverride: OtpOverride | null;
   privacyAudit: PrivacyEvent[];

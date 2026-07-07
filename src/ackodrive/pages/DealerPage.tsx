@@ -3,13 +3,16 @@ import { PortalShell, RequireAuth, TurnBanner } from "../components/PortalShell"
 import { FlowStepper } from "../components/FlowStepper";
 import { CaseList } from "../components/CaseList";
 import { TestRideReminder } from "../components/TestRideReminder";
-import { Badge, Card, PrimaryButton, TabButton } from "../components/ui";
+import { Badge, Card, PrimaryButton, SecondaryButton, TabButton } from "../components/ui";
 import { DEALER, MODELS, BRAND_MODELS, TIME_SLOTS } from "../constants";
 import { useCases } from "../hooks/useCases";
 import { useDemoState } from "../hooks/useDemoState";
+import { useLeads, hasOpenLeads } from "../hooks/useLeads";
 import type { DemoState } from "../types";
 import { generateAltOptions, getNextActor, isBookingConfirmed, toggleDriverSlotTime } from "../workflow";
-import { allotDriverToRide } from "../workflowActions";
+import { allotDriverToRide, closeLeadAsCompleted, deleteAllLeadsAndResetDemo, rejectLead } from "../workflowActions";
+import { propensityScore, propensityLabel } from "../leadPipeline";
+import { LOGIN_EPOCH_KEY } from "../auth";
 
 export function DealerPage() {
   return (
@@ -24,7 +27,9 @@ export function DealerPage() {
 function DealerContent() {
   const { state, setState, loaded } = useDemoState();
   const { cases } = useCases();
+  const { leads, loading: leadsLoading, refresh: refreshLeads } = useLeads();
   const [tab, setTab] = useState<"live" | "history">("live");
+  const [clearingLeads, setClearingLeads] = useState(false);
 
   if (!loaded) return <div className="ad-caption p-8 text-center">Loading…</div>;
 
@@ -36,6 +41,24 @@ function DealerContent() {
     const driver = state.driverRoster.find((d) => d.id === driverId);
     if (!driver || !driver.available) return;
     await allotDriverToRide(setState, state, driver.id, driver.name, driver.reg);
+  };
+
+  const showDeleteAllLeads =
+    !leadsLoading &&
+    (state.leadSent || (state.leadId != null && !state.leadClosed) || hasOpenLeads(leads));
+
+  const handleDeleteAllLeads = async () => {
+    const confirmed = window.confirm(
+      "Delete all leads and reset the live demo? Customer apps will be cleared so a new booking can start.",
+    );
+    if (!confirmed) return;
+    setClearingLeads(true);
+    try {
+      await deleteAllLeadsAndResetDemo();
+      await refreshLeads();
+    } finally {
+      setClearingLeads(false);
+    }
   };
 
   return (
@@ -77,7 +100,11 @@ function DealerContent() {
               </Card>
             )}
 
-            {state.leadSent && (
+            {state.leadSent && (() => {
+              const loginEpoch = Number(sessionStorage.getItem(LOGIN_EPOCH_KEY) ?? "0");
+              const score = propensityScore(state.customerPhoneRaw ?? "", loginEpoch);
+              const label = propensityLabel(score);
+              return (
               <Card>
                 <Badge tone="info">Acko ML · {state.qualification}</Badge>
                 <div className="ad-label mt-2 text-base">{state.customerName}</div>
@@ -85,16 +112,40 @@ function DealerContent() {
                 <div className="text-xs">
                   {model?.name} · {state.variant}
                 </div>
+                <div className="ad-caption mt-0.5 flex items-center gap-1.5">
+                  <span>Propensity score: {score.toFixed(1)}</span>
+                  <span className={score >= 3 ? "ad-propensity-high" : "ad-propensity-low"}>{label}</span>
+                </div>
                 {state.chosenSlot?.driverName && (
                   <div className="ad-caption mt-1">Requested driver: {state.chosenSlot.driverName}</div>
                 )}
                 {!state.dealerAccepted && (
-                  <div className="mt-3">
+                  <div className="mt-3 grid grid-cols-2 gap-2">
                     <PrimaryButton onClick={() => void setState({ dealerAccepted: true }, "Dealer accepted lead")}>
                       Accept lead
                     </PrimaryButton>
+                    <SecondaryButton onClick={() => void rejectLead(setState, state)} className="!w-full">
+                      Reject lead
+                    </SecondaryButton>
                   </div>
                 )}
+              </Card>
+              );
+            })()}
+
+            {showDeleteAllLeads && (
+              <Card className="!mt-3 !border-dashed">
+                <p className="ad-caption text-[11px]">
+                  Clear every lead and reset customer, driver, and dealer live state for a fresh demo run.
+                </p>
+                <button
+                  type="button"
+                  disabled={clearingLeads}
+                  onClick={() => void handleDeleteAllLeads()}
+                  className="ad-btn-secondary mt-3 !w-full !text-sm !text-[var(--ad-status-error,#c62828)]"
+                >
+                  {clearingLeads ? "Clearing…" : "Delete all leads"}
+                </button>
               </Card>
             )}
 
@@ -118,6 +169,19 @@ function DealerContent() {
                   >
                     📩 {state.driverReminderSent ? "Resend" : "Send"} reminder to driver
                   </button>
+                )}
+                {state.rideComplete && !state.leadClosed && (
+                  <div className="mt-3">
+                    <PrimaryButton onClick={() => void closeLeadAsCompleted(setState, state)}>
+                      Mark lead completed and closed
+                    </PrimaryButton>
+                    <p className="ad-caption mt-2 text-[11px]">
+                      Closes the ride without waiting for customer feedback and frees the driver.
+                    </p>
+                  </div>
+                )}
+                {state.leadClosed && (
+                  <p className="ad-caption mt-2 text-[11px]">Lead closed — customer can book again.</p>
                 )}
               </Card>
             )}

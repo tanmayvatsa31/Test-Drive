@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { BRAND_MODELS, CAR_BRANDS } from "../constants";
 import { findBrowseCar } from "../carsBrowseCatalog";
-import { insertLead } from "../hooks/useLeads";
+import { insertLead, findOpenLeadForCustomer } from "../hooks/useLeads";
 import { useDemoState } from "../hooks/useDemoState";
 import { startCustomerJourney } from "../workflowActions";
-import { getSelectedCar } from "../customerIntent";
+import { getSelectedCar, setCustomerIntent, clearSelectedCar } from "../customerIntent";
 import { SelectedCarReadonlyCard } from "./SelectedCarReadonlyCard";
 import { PrimaryButton } from "./ui";
 
@@ -58,7 +58,7 @@ export function BookFreeConsultationForm({
   defaultPhone?: string;
 }) {
   const navigate = useNavigate();
-  const { setState } = useDemoState();
+  const { state, setState } = useDemoState();
   // Cars → /app is always the doorstep test-drive path (slot selection after submit).
   const intent = "testride" as const;
   const carSelection = useMemo(() => resolveSelectedCarDetails(), []);
@@ -99,21 +99,35 @@ export function BookFreeConsultationForm({
           return;
         }
         setSubmitting(true);
-        const { data: lead, error: insertError } = await insertLead({
-          name: name.trim(),
-          phone: phone.trim(),
-          address: address.trim(),
-          pincode: pincode.trim(),
-          model_id: carSelection.modelId,
-          model_name: `${carSelection.brandName} ${carSelection.modelName} · ${carSelection.variant}`,
-          source: "customer_app",
-        });
-        if (insertError || !lead) {
+        setCustomerIntent(intent);
+
+        let lead = await findOpenLeadForCustomer(phone.trim(), carSelection.modelId);
+        if (!lead) {
+          const { data: inserted, error: insertError } = await insertLead({
+            name: name.trim(),
+            phone: phone.trim(),
+            address: address.trim(),
+            pincode: pincode.trim(),
+            model_id: carSelection.modelId,
+            model_name: `${carSelection.brandName} ${carSelection.modelName} · ${carSelection.variant}`,
+            source: "customer_app",
+          });
+          if (insertError || !inserted) {
+            setSubmitting(false);
+            setError("Could not submit. Please try again.");
+            return;
+          }
+          lead = inserted;
+        }
+
+        if (!lead) {
           setSubmitting(false);
           setError("Could not submit. Please try again.");
           return;
         }
-        await startCustomerJourney(setState, { ...lead, variant: carSelection.variant }, intent);
+
+        clearSelectedCar();
+        await startCustomerJourney(setState, { ...lead, variant: carSelection.variant }, intent, state);
         setSubmitting(false);
       }}
     >
