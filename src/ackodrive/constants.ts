@@ -84,7 +84,7 @@ export const DEMO_SCRIPT_STEPS: { id: string; label: string; check: (s: DemoStat
 ];
 
 export const PRESENTER_KIT = [
-  { label: "OEM Backend", url: "/login?role=oem&redirect=/master" },
+  { label: "OEM Data Sheet", url: "/login/oem" },
   { label: "Tata Form", url: "/tata" },
   { label: "Customer", url: "/login?role=customer&redirect=/customer" },
   { label: "Dealer", url: "/login?role=dealer&redirect=/dealer" },
@@ -96,5 +96,5 @@ export const PORTALS = [
   { to: "/login?role=customer&redirect=/customer", loginTo: "/login?role=customer&redirect=/customer", role: "customer", title: "Customer app", desc: "ML nudge, booking, tracking, OTP & feedback", emoji: "📱", newTab: true },
   { to: "/login?role=dealer&redirect=/dealer", loginTo: "/login?role=dealer&redirect=/dealer", role: "dealer", title: "Dealer Portal", desc: "Inbox, roster, calendar, insights & OTP override", emoji: "🏢", newTab: true },
   { to: "/login?role=driver&redirect=/driver", loginTo: "/login?role=driver&redirect=/driver", role: "driver", title: "Driver App", desc: "Assignment, masked call, en-route, OTP close", emoji: "🚗", newTab: true },
-  { to: "/login?role=oem&redirect=/master", loginTo: "/login?role=oem&redirect=/master", role: "oem", title: "OEM Control Room", desc: "Backend: live flow, audit log, privacy trail", emoji: "🎛️", newTab: true },
+  { to: "/login?role=oem&redirect=/oem", loginTo: "/login?role=oem&redirect=/oem", role: "oem", title: "OEM Data Sheet", desc: "Fleet metrics, dealer performance, and live lead propensity", emoji: "📊", newTab: true },
 ];

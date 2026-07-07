@@ -75,6 +75,8 @@ export interface DemoState {
   mlFlagged: boolean;
   leadId: string | null;
   qualification: Qualification | null;
+  /** ML propensity score (2–5) set when customer picks qualification during Shivi call. */
+  propensity: number | null;
   testrideAccepted: boolean;
   model: string | null;
   variant: string | null;

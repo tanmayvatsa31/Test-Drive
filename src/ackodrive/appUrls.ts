@@ -66,14 +66,14 @@ export function getDemoFlowTabs(): DemoFlowTab[] {
   const driver = urls.driver.replace(/\/$/, "");
 
   const dealerLogin = isGitHubPagesDeploy() ? `${admin}#/login/dealer` : `${admin}/login/dealer`;
-  const oemLogin = isGitHubPagesDeploy() ? `${admin}#/login/oem` : `${admin}/login/oem`;
+  const oemLogin = getOemDataSheetLoginUrl();
   const presenter = isGitHubPagesDeploy() ? `${admin}#/login` : `${admin}/login`;
 
   return [
     { id: "customer", label: "Customer app", url: customer },
     { id: "driver", label: "Driver app", url: driver },
     { id: "dealer", label: "Dealer portal", url: dealerLogin },
-    { id: "oem", label: "OEM control room", url: oemLogin },
+    { id: "oem", label: "OEM data sheet", url: oemLogin },
     { id: "presenter", label: "Presenter kit", url: presenter },
   ];
 }
@@ -81,6 +81,18 @@ export function getDemoFlowTabs(): DemoFlowTab[] {
 export function isGitHubPagesDeploy(): boolean {
   if (import.meta.env.VITE_GITHUB_PAGES === "true") return true;
   return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+}
+
+/** Public login URL for the OEM Data Sheet portal. */
+export function getOemDataSheetLoginUrl(): string {
+  const admin = getAppUrls().admin.replace(/\/$/, "");
+  return isGitHubPagesDeploy() ? `${admin}#/login/oem` : `${admin}/login/oem`;
+}
+
+/** Direct URL to the OEM Data Sheet dashboard (requires sign-in). */
+export function getOemDataSheetUrl(): string {
+  const admin = getAppUrls().admin.replace(/\/$/, "");
+  return isGitHubPagesDeploy() ? `${admin}#/oem` : `${admin}/oem`;
 }
 
 export function openApp(app: AppUrlKey, path = ""): void {

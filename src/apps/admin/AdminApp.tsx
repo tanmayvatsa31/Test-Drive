@@ -2,10 +2,12 @@ import { AppRouter } from "../../ackodrive/AppRouter";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { DealerPage } from "../../ackodrive/pages/DealerPage";
 import { MasterPage } from "../../ackodrive/pages/MasterPage";
+import { OemPage } from "../../ackodrive/pages/OemPage";
 import { AdminLoginPage } from "./AdminLoginPage";
 import { AdminConsolePage } from "./AdminConsolePage";
 import { PresenterPage } from "./PresenterPage";
 import { AdminGate } from "./AdminGate";
+import { OemLoginPage } from "./OemLoginPage";
 import { RoleEmailLoginPage } from "./RoleEmailLoginPage";
 
 export function AdminApp() {
@@ -24,18 +26,9 @@ export function AdminApp() {
             />
           }
         />
-        <Route
-          path="/login/oem"
-          element={
-            <RoleEmailLoginPage
-              role="oem"
-              redirectTo="/master"
-              title="OEM control room"
-              subtitle="Sign in with your @acko.com or @acko.tech email"
-            />
-          }
-        />
+        <Route path="/login/oem" element={<OemLoginPage />} />
         <Route path="/dealer" element={<DealerPage />} />
+        <Route path="/oem" element={<OemPage />} />
         <Route path="/master" element={<MasterPage />} />
         <Route element={<AdminGate />}>
           <Route path="/" element={<AdminConsolePage />} />

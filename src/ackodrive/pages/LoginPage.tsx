@@ -16,7 +16,7 @@ const REDIRECTS: Record<Role, string> = {
   customer: "/customer",
   dealer: "/dealer",
   driver: "/driver",
-  oem: "/master",
+  oem: "/oem",
 };
 
 export function LoginPage() {

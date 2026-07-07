@@ -7,7 +7,7 @@ export function PortalGrid() {
   if (isAdminApp) {
     const adminPortals = [
       { emoji: "🏢", title: "Dealer Portal", desc: "Inbox, roster, calendar, insights & OTP override", href: "/dealer", external: false },
-      { emoji: "🎛️", title: "OEM Control Room", desc: "Backend: live flow, audit log, privacy trail", href: "/master", external: false },
+      { emoji: "📊", title: "OEM Data Sheet", desc: "Fleet metrics, dealer performance, and live lead propensity", href: "/oem", external: false },
       { emoji: "📱", title: "Customer app", desc: "Mobile app — booking, tracking, OTP & feedback", href: APP_URLS.customer, external: true },
       { emoji: "🚗", title: "Driver app", desc: "Mobile app — assignment, masked call, ride closure", href: APP_URLS.driver, external: true },
       { emoji: "🎯", title: "Presenter kit", desc: "Open all portals, script, reset demo", href: "/presenter", external: false },

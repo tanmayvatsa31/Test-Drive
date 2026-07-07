@@ -11,7 +11,7 @@ const ROLE_LABELS: Record<Role, string> = {
   customer: "Customer App",
   dealer: "Dealer Portal",
   driver: "Driver App",
-  oem: "OEM Control Room",
+  oem: "OEM Data Sheet",
 };
 
 export function PortalShell({
@@ -75,7 +75,7 @@ export function PortalShell({
           </div>
         </div>
       </header>
-      <main className={`mx-auto w-full max-w-full px-4 py-5 sm:px-6 sm:py-6 ${wide ? "max-w-6xl" : "max-w-[460px]"}`}>{children}</main>
+      <main className={`ad-portal-main ${wide ? "ad-portal-main--wide" : "ad-portal-main--narrow"}`}>{children}</main>
     </div>
   );
 }

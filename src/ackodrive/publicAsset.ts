@@ -1,10 +1,12 @@
-/** Resolve a `public/` asset against the current document (works on GitHub Pages subpaths and local dev). */
+/** Resolve a `public/` asset from the app base URL (not the current route path). */
 export function publicAsset(path: string): string {
   const normalized = path.replace(/^\//, "");
-  if (typeof document !== "undefined") {
-    return new URL(normalized, document.baseURI).href;
+  const base = import.meta.env.BASE_URL ?? "/";
+
+  if (typeof window !== "undefined") {
+    return new URL(normalized, new URL(base, window.location.origin)).href;
   }
-  const base = import.meta.env.BASE_URL;
+
   return `${base}${normalized}`;
 }
 

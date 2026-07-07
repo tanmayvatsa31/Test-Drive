@@ -32,6 +32,7 @@ import {
   shouldShowIncomingDriverCallScreen,
   shouldShowIncomingShiviCallScreen,
 } from "../workflow";
+import { computePropensityFromQualification } from "../oemAnalytics";
 import { bookDriverTiedSlot } from "../workflowActions";
 
 export function CustomerPage() {
@@ -176,7 +177,16 @@ function CustomerContent() {
       )}
 
       {state.shiviCallAnswered && state.shiviCallInitiated && !state.qualification && (
-        <QualificationCard name={state.customerName} onPick={(q) => void setState({ qualification: q }, `Shivi: customer is ${q}`)} />
+        <QualificationCard
+          name={state.customerName}
+          onPick={(q) => {
+            const propensity = computePropensityFromQualification(q);
+            void setState(
+              { qualification: q, propensity },
+              `Shivi: lead "${q}" · propensity ${propensity}/5`,
+            );
+          }}
+        />
       )}
 
       {state.qualification === "qualified" && (

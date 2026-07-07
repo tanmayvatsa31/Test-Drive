@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { APP_URLS, openApp } from "../../ackodrive/appUrls";
+import { APP_URLS, getOemDataSheetLoginUrl, openApp } from "../../ackodrive/appUrls";
 import { OpenAllDemoTabsButton } from "../../ackodrive/components/OpenAllDemoTabsButton";
 import { DemoChecklist } from "../../ackodrive/components/DemoChecklist";
 import { FlowStepper } from "../../ackodrive/components/FlowStepper";
@@ -63,8 +63,12 @@ export function PresenterPage() {
             <button type="button" className="ad-btn-secondary" onClick={() => openApp("admin", "/dealer")}>
               Dealer portal ↗
             </button>
-            <button type="button" className="ad-btn-secondary" onClick={() => openApp("admin", "/master")}>
-              OEM control room ↗
+            <button
+              type="button"
+              className="ad-btn-secondary"
+              onClick={() => window.open(getOemDataSheetLoginUrl(), "_blank", "noopener,noreferrer")}
+            >
+              OEM data sheet ↗
             </button>
           </div>
           <p className="ad-caption mt-3">
