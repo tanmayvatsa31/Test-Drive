@@ -2,9 +2,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TIME_SLOTS } from "../constants";
 import type { DemoState } from "../types";
-import { classifyDate, generateDriverTiedSlots } from "../workflow";
-import { bookDriverTiedSlot } from "../workflowActions";
-import type { SetStateFn } from "../workflowActions";
+import { classifyDate, generateDriverTiedSlots, parseDateInput } from "../workflow";
+import { bookDriverTiedSlot, type SetStateFn } from "../workflowActions";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
@@ -35,9 +34,9 @@ function firstOpenSlotIndex(slotsByWindow: (ReturnType<typeof generateDriverTied
 }
 
 export function isCustomerSchedulingSlot(state: DemoState): boolean {
-  if (state.qualification !== "undecided" && state.qualification !== "browsing") return false;
   if (!state.testrideAccepted || !state.model) return false;
   if (state.chosenSlot) return false;
+  if (state.qualification === "qualified") return false;
   return true;
 }
 
@@ -88,12 +87,23 @@ export function ScheduleTestRideScreen({
               key={`${alt.date}-${alt.time}`}
               type="button"
               className="ad-timeslot-slot"
-              onClick={() =>
-                void setState(
-                  { chosenSlot: alt, customerReconfirmed: true, calendarFree: true },
-                  `Customer picked alt slot ${alt.label}`,
-                )
-              }
+              onClick={() => {
+                const altDate = parseDateInput(alt.date);
+                const classification = altDate ? classifyDate(today.getTime(), altDate) : null;
+                void bookDriverTiedSlot(
+                  setState,
+                  alt,
+                  {
+                    bookingDate: today.getTime(),
+                    dateClass: classification?.dateClass ?? state.dateClass ?? "lt7",
+                    dealerConfirmRequired: false,
+                    selectedDealerCode: alt.dealerCode ?? state.selectedDealerCode,
+                  },
+                  state,
+                ).then(() =>
+                  setState({ customerReconfirmed: true, calendarFree: true }, "Customer picked alt slot"),
+                );
+              }}
             >
               {alt.label} · {alt.time}
             </button>
@@ -112,7 +122,7 @@ export function ScheduleTestRideScreen({
       dateClass: classification.dateClass,
       dealerConfirmRequired: classification.needsConfirm,
       selectedDealerCode: selectedSlot.dealerCode ?? null,
-    });
+    }, state);
     setSubmitting(false);
   };
 

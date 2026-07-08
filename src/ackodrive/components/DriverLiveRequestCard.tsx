@@ -5,7 +5,7 @@ import { findBrowseCar } from "../carsBrowseCatalog";
 import type { DemoState } from "../types";
 import type { SetStateFn } from "../workflowActions";
 import { publicAsset } from "../publicAsset";
-import { driverPlacedCall } from "../workflowActions";
+import { driverPlacedCall, completeRideWithOtp } from "../workflowActions";
 
 const DIVIDER = "/assets/figma/driver-request-divider.png";
 const CALL_DRIVER_ICON = "/assets/figma/call-driver-icon.png";
@@ -309,7 +309,7 @@ export function DriverLiveRequestCard({
                 className="ad-driver-request-cta"
                 onClick={() => {
                   if (otpInput === state.otp) {
-                    void setState({ rideComplete: true }, "Driver closed ride with correct OTP");
+                    void completeRideWithOtp(setState, state);
                     setOtpError(null);
                   } else {
                     setOtpError("Wrong OTP. Ask the customer.");

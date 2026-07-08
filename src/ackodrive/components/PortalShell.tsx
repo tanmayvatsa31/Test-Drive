@@ -1,8 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getSession, clearSession } from "../auth";
 import { isCustomerApp, isDriverApp, isAdminApp, loginPathForRole } from "../appMode";
-import { currentAppPath, redirectToAppRoute } from "../appUrls";
 import { CustomerAppShell } from "./CustomerAppShell";
 import { DriverAppShell } from "./DriverAppShell";
 import { AuthLoading } from "./AuthLoading";
@@ -15,6 +14,13 @@ const ROLE_LABELS: Record<Role, string> = {
   oem: "OEM Data Sheet",
 };
 
+function portalTitle(role: Role, pathname: string): string {
+  if (role === "oem" && pathname.startsWith("/master")) {
+    return "OEM Control Room";
+  }
+  return ROLE_LABELS[role];
+}
+
 export function PortalShell({
   role,
   children,
@@ -26,6 +32,9 @@ export function PortalShell({
 }) {
   const session = useSession(role);
   const loginPath = loginPathForRole(role);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const headerTitle = portalTitle(role, location.pathname);
 
   if (role === "customer" && isCustomerApp) {
     return <CustomerAppShell>{children}</CustomerAppShell>;
@@ -52,7 +61,7 @@ export function PortalShell({
                 ← Console
               </Link>
             )}
-            <div className="ad-portal-header-title text-white">{ROLE_LABELS[role]}</div>
+            <div className="ad-portal-header-title text-white">{headerTitle}</div>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {session && (
@@ -61,7 +70,7 @@ export function PortalShell({
                 <button
                   onClick={() => {
                     clearSession(role);
-                    redirectToAppRoute(loginPath);
+                    navigate(loginPath, { replace: true });
                   }}
                   className="text-[10px] text-white/60 underline hover:text-white/90"
                 >
@@ -84,15 +93,14 @@ export function PortalShell({
 export function RequireAuth({ role, children }: { role: Role; children: ReactNode }) {
   const [ok, setOk] = useState<boolean | null>(null);
   const loginPath = loginPathForRole(role);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const check = () => {
       const session = getSession(role);
       if (!session) {
         setOk(false);
-        if (currentAppPath() !== loginPath) {
-          redirectToAppRoute(loginPath);
-        }
+        navigate(loginPath, { replace: true });
       } else {
         setOk(true);
       }
@@ -100,7 +108,7 @@ export function RequireAuth({ role, children }: { role: Role; children: ReactNod
     check();
     window.addEventListener("ackodrive_session_changed", check);
     return () => window.removeEventListener("ackodrive_session_changed", check);
-  }, [role, loginPath]);
+  }, [role, loginPath, navigate]);
 
   if (ok === null) return <AuthLoading />;
   if (ok !== true) return <AuthLoading label="Redirecting to sign in…" />;

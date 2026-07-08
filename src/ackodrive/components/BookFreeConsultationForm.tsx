@@ -111,6 +111,7 @@ export function BookFreeConsultationForm({
             model_id: carSelection.modelId,
             model_name: `${carSelection.brandName} ${carSelection.modelName} · ${carSelection.variant}`,
             source: "customer_app",
+            status: "new",
           });
           if (insertError || !inserted) {
             setSubmitting(false);

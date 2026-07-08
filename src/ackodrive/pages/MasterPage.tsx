@@ -1,21 +1,22 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { openApp } from "../appUrls";
+import { LeadSummaryContent } from "../components/LeadSummaryContent";
 import {
+  buildOemPipelineGroups,
   canInitiateShiviCall,
-  dedupeLeadsForPipeline,
-  filterLeadsByDate,
+  countVisibleOemLeads,
+  formatLeadCreatedAt,
   formatLeadFilterHeading,
   getClosedLeadFeedback,
+  getQualificationLeadFeedback,
+  isLeadQualificationFeedback,
   isLeadClosed,
   isLeadInProgress,
-  leadStatusBadgeTone,
-  leadStatusLabel,
-  propensityScore,
-  propensityLabel,
   todayIsoDate,
   type LeadDateFilter,
 } from "../leadPipeline";
+import { resolveLeadDisplay } from "../leadDisplay";
 import { LOGIN_EPOCH_KEY } from "../auth";
 import { PortalShell, RequireAuth } from "../components/PortalShell";
 import { Badge, Card, TabButton } from "../components/ui";
@@ -23,8 +24,7 @@ import { useCases } from "../hooks/useCases";
 import { useDemoState } from "../hooks/useDemoState";
 import { useSlaWatchdog } from "../hooks/useSlaWatchdog";
 import { useLeads } from "../hooks/useLeads";
-import type { Lead } from "../types";
-import { maskPhone } from "../workflow";
+import type { DemoState, Lead } from "../types";
 import { initiateShiviCallFromOem } from "../workflowActions";
 
 export function MasterPage() {
@@ -39,16 +39,21 @@ export function MasterPage() {
 
 function MasterContent() {
   const { state, setState, loaded } = useDemoState();
-  const { leads } = useLeads();
+  const { leads, refresh: refreshLeads } = useLeads();
   const { cases } = useCases();
   const [dateFilter, setDateFilter] = useState<LeadDateFilter>("today");
   const [customDate, setCustomDate] = useState(todayIsoDate);
   useSlaWatchdog();
 
-  const filteredLeads = useMemo(() => {
-    const byDate = filterLeadsByDate(leads, dateFilter, customDate);
-    return dedupeLeadsForPipeline(byDate);
-  }, [customDate, dateFilter, leads]);
+  const leadGroups = useMemo(
+    () => buildOemPipelineGroups(leads, state, dateFilter, customDate),
+    [customDate, dateFilter, leads, state],
+  );
+  const filteredLeadCount = useMemo(
+    () => leadGroups.reduce((sum, group) => sum + group.leads.length, 0),
+    [leadGroups],
+  );
+  const visibleLeadCount = useMemo(() => countVisibleOemLeads(leads, state), [leads, state]);
   const filterHeading = formatLeadFilterHeading(dateFilter, customDate);
 
   if (!loaded) return <div className="ad-caption p-8 text-center">Loading…</div>;
@@ -74,7 +79,17 @@ function MasterContent() {
       <Card>
         <div className="mb-3 flex items-center justify-between gap-2">
           <div className="ad-overline">Lead pipeline</div>
-          <Badge tone="info">live</Badge>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void refreshLeads()}
+              className="ad-btn-secondary !px-2 !py-1 !text-[10px]"
+              title="Refresh leads"
+            >
+              ↻ Refresh
+            </button>
+            <Badge tone="info">live</Badge>
+          </div>
         </div>
 
         <div className="ad-lead-date-filter">
@@ -83,6 +98,7 @@ function MasterContent() {
               [
                 { id: "today" as const, label: "Today" },
                 { id: "yesterday" as const, label: "Yesterday" },
+                { id: "all" as const, label: "All" },
                 { id: "custom" as const, label: "Choose date" },
               ] as const
             ).map((option) => (
@@ -114,13 +130,13 @@ function MasterContent() {
         <div className="ad-lead-date-section">
           <h2 className="ad-lead-date-section-title">{filterHeading}</h2>
           <span className="ad-lead-date-section-count">
-            {filteredLeads.length} lead{filteredLeads.length === 1 ? "" : "s"}
+            {filteredLeadCount} lead{filteredLeadCount === 1 ? "" : "s"}
           </span>
         </div>
 
-        {!leads.length && (
+        {!visibleLeadCount && (
           <p className="ad-caption text-center">
-            No leads yet. Customer submits via the{" "}
+            No leads yet. Customer completes a test drive booking (including slot selection) in the{" "}
             <button type="button" onClick={() => openApp("customer")} className="font-medium underline">
               customer app
             </button>
@@ -128,21 +144,36 @@ function MasterContent() {
           </p>
         )}
 
-        {leads.length > 0 && filteredLeads.length === 0 && (
-          <p className="ad-caption py-4 text-center">No leads for {filterHeading.toLowerCase()}.</p>
+        {visibleLeadCount > 0 && filteredLeadCount === 0 && (
+          <p className="ad-caption py-4 text-center">
+            No leads for {filterHeading.toLowerCase()}. Try <strong>All</strong> or another date —{" "}
+            {visibleLeadCount} booked lead{visibleLeadCount === 1 ? "" : "s"} in the pipeline.
+          </p>
         )}
 
-        <ul className="divide-y divide-[var(--ad-border-default)]">
-          {filteredLeads.map((lead) => (
-            <LeadPipelineRow
-              key={lead.id}
-              lead={lead}
-              cases={cases}
-              activeLeadId={state.leadId}
-              onInitiate={() => void initiateCall(lead)}
-            />
-          ))}
-        </ul>
+        {leadGroups.map((group) => (
+          <section key={group.dateIso} className="ad-lead-date-stack">
+            {(dateFilter === "all" || leadGroups.length > 1) && (
+              <div className="ad-lead-date-section ad-lead-date-section-stacked">
+                <h3 className="ad-lead-date-section-title">{group.heading}</h3>
+                <span className="ad-lead-date-section-count">
+                  {group.leads.length} lead{group.leads.length === 1 ? "" : "s"}
+                </span>
+              </div>
+            )}
+            <ul className="divide-y divide-[var(--ad-border-default)]">
+              {group.leads.map((lead) => (
+                <LeadPipelineRow
+                  key={lead.id}
+                  lead={lead}
+                  cases={cases}
+                  demoState={state}
+                  onInitiate={() => void initiateCall(lead)}
+                />
+              ))}
+            </ul>
+          </section>
+        ))}
       </Card>
     </>
   );
@@ -151,47 +182,46 @@ function MasterContent() {
 function LeadPipelineRow({
   lead,
   cases,
-  activeLeadId,
+  demoState,
   onInitiate,
 }: {
   lead: Lead;
   cases: ReturnType<typeof useCases>["cases"];
-  activeLeadId: string | null;
+  demoState: DemoState;
   onInitiate: () => void;
 }) {
+  const activeLeadId = demoState.leadId;
+  const pipelineState = demoState;
+  const qualificationFeedback = isLeadQualificationFeedback(lead, pipelineState, activeLeadId);
   const closed = isLeadClosed(lead, cases, activeLeadId);
-  const showInitiate = canInitiateShiviCall(lead, cases, activeLeadId);
-  const inProgress = isLeadInProgress(lead, cases, activeLeadId);
+  const showInitiate = canInitiateShiviCall(lead, cases, activeLeadId, pipelineState);
+  const inProgress = isLeadInProgress(lead, cases, activeLeadId, pipelineState);
 
   const loginEpoch = Number(sessionStorage.getItem(LOGIN_EPOCH_KEY) ?? "0");
-  const score = propensityScore(lead.phone, loginEpoch);
-  const label = propensityLabel(score);
+  const display = resolveLeadDisplay(lead, demoState, loginEpoch);
 
   return (
-    <li className="ad-lead-row gap-3 py-2.5">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="ad-label text-sm">{lead.name}</span>
-          <Badge tone={leadStatusBadgeTone(lead, cases, activeLeadId)}>
-            {leadStatusLabel(lead, cases, activeLeadId)}
-          </Badge>
-        </div>
-        <div className="ad-caption break-words">
-          {maskPhone(lead.phone)} · 📍 {lead.pincode} · {lead.model_name}
-        </div>
-        <div className="ad-caption mt-0.5 flex items-center gap-1.5">
-          <span>Propensity score: {score.toFixed(1)}</span>
-          <span className={score >= 3 ? "ad-propensity-high" : "ad-propensity-low"}>{label}</span>
-        </div>
+    <li className="ad-lead-row gap-3 py-3">
+      <div className="min-w-0 flex-1">
+        <LeadSummaryContent
+          display={display}
+          createdAtLabel={formatLeadCreatedAt(lead, demoState)}
+        />
       </div>
       {showInitiate ? (
         <button type="button" onClick={onInitiate} className="ad-btn-primary ad-lead-initiate-btn !w-full shrink-0 sm:!w-auto">
           📞 Initiate Shivi call
         </button>
+      ) : qualificationFeedback && demoState.qualification ? (
+        <p className="ad-lead-closure-note shrink-0 sm:max-w-[14rem]">
+          {getQualificationLeadFeedback(lead, demoState.qualification)}
+        </p>
       ) : closed ? (
-        <p className="ad-lead-closure-note">{getClosedLeadFeedback(lead, cases)}</p>
+        <p className="ad-lead-closure-note shrink-0 sm:max-w-[14rem]">{getClosedLeadFeedback(lead, cases)}</p>
       ) : inProgress ? (
-        <p className="ad-lead-closure-note ad-lead-progress-note">Shivi call in progress — customer journey active</p>
+        <p className="ad-lead-closure-note ad-lead-progress-note shrink-0 sm:max-w-[14rem]">
+          Shivi call in progress — customer journey active
+        </p>
       ) : null}
     </li>
   );

@@ -6,15 +6,16 @@ import { DriverAssignedScreen } from "../components/DriverAssignedScreen";
 import { DriverEnRouteScreen } from "../components/DriverEnRouteScreen";
 import { IncomingDriverCallScreen } from "../components/IncomingDriverCallScreen";
 import { IncomingShiviCallScreen } from "../components/IncomingShiviCallScreen";
+import { ShiviQualificationCard } from "../components/ShiviQualificationCard";
 import { isCustomerSchedulingSlot, ScheduleTestRideScreen } from "../components/ScheduleTestRideScreen";
 import { TestRideReminder } from "../components/TestRideReminder";
 import { Badge, Card, PrimaryButton } from "../components/ui";
 import { getSession } from "../auth";
 import { getSelectedCar } from "../customerIntent";
-import { BOOKING_AMOUNT, DEALER, MODELS, SHIVI_LINE, BRAND_MODELS } from "../constants";
+import { BOOKING_AMOUNT, DEALER, MODELS, BRAND_MODELS } from "../constants";
 import { insertCase } from "../hooks/useCases";
 import { useDemoState } from "../hooks/useDemoState";
-import type { DemoState, Qualification } from "../types";
+import type { DemoState } from "../types";
 import {
   classifyDate,
   generateDriverTiedSlots,
@@ -31,8 +32,8 @@ import {
   shouldShowDriverEnRouteScreen,
   shouldShowIncomingDriverCallScreen,
   shouldShowIncomingShiviCallScreen,
+  shouldShowQualificationCard,
 } from "../workflow";
-import { computePropensityFromQualification } from "../oemAnalytics";
 import { bookDriverTiedSlot } from "../workflowActions";
 
 export function CustomerPage() {
@@ -48,6 +49,14 @@ function CustomerPageLayout() {
 
   if (loaded && shouldShowIncomingShiviCallScreen(state)) {
     return <IncomingShiviCallScreen state={state} setState={setState} />;
+  }
+
+  if (loaded && shouldShowQualificationCard(state)) {
+    return (
+      <PortalShell role="customer">
+        <ShiviQualificationCard state={state} setState={setState} />
+      </PortalShell>
+    );
   }
 
   if (loaded && shouldShowDealerConfirmingLoader(state)) {
@@ -97,7 +106,10 @@ function CustomerContent() {
   }
 
   const inTestRideJourney =
-    state.qualification === "undecided" || state.qualification === "browsing";
+    state.testrideAccepted &&
+    (state.qualification === null ||
+      state.qualification === "undecided" ||
+      state.qualification === "browsing");
 
   if (inTestRideJourney && isCustomerSchedulingSlot(state)) {
     return <ScheduleTestRideScreen state={state} setState={setState} />;
@@ -170,25 +182,6 @@ function CustomerContent() {
         <WaitingCard name={state.customerName || "there"} />
       )}
 
-      {state.shiviCallRejected && !state.shiviCallAnswered && (
-        <Card>
-          <p className="text-sm">You declined the call from Shivi. Waiting for a callback…</p>
-        </Card>
-      )}
-
-      {state.shiviCallAnswered && state.shiviCallInitiated && !state.qualification && (
-        <QualificationCard
-          name={state.customerName}
-          onPick={(q) => {
-            const propensity = computePropensityFromQualification(q);
-            void setState(
-              { qualification: q, propensity },
-              `Shivi: lead "${q}" · propensity ${propensity}/5`,
-            );
-          }}
-        />
-      )}
-
       {state.qualification === "qualified" && (
         <PurchaseFlow state={state} setState={setState} model={model} />
       )}
@@ -211,31 +204,6 @@ function WaitingCard({ name }: { name: string }) {
     <Card>
       <div className="text-sm font-semibold">Hi {name.split(" ")[0]} — thanks for your enquiry on Tata.com</div>
       <p className="ad-caption mt-2 rounded-lg bg-[var(--ad-accent-purple)] px-3 py-2">Waiting for OEM to initiate your callback…</p>
-    </Card>
-  );
-}
-
-function QualificationCard({ name, onPick }: { name: string; onPick: (q: Qualification) => void }) {
-  return (
-    <Card>
-      <div className="mb-3 flex items-center gap-3">
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--ad-surface-dark)] text-xl text-white">S</div>
-        <div>
-          <div className="text-sm font-semibold">Shivi · Acko Assistant</div>
-          <div className="text-[11px] ad-caption">Incoming call from <span className="font-mono">{SHIVI_LINE}</span></div>
-        </div>
-        <Badge tone="live">● LIVE</Badge>
-      </div>
-      <p className="text-sm text-[var(--ad-text-primary)]">&quot;Hi {name.split(" ")[0]} — how serious are you about a new Tata?&quot;</p>
-      <div className="mt-4 grid gap-2">
-        <PrimaryButton onClick={() => onPick("qualified")}>✅ Ready to buy now</PrimaryButton>
-        <button onClick={() => onPick("undecided")} className="ad-btn-secondary !w-full !py-3 !text-sm">
-          🤔 Undecided — exploring
-        </button>
-        <button onClick={() => onPick("browsing")} className="ad-btn-secondary !w-full !py-3 !text-sm">
-          👀 Just browsing
-        </button>
-      </div>
     </Card>
   );
 }
@@ -479,7 +447,7 @@ function TestRideFlow({
                 dateClass: classification.dateClass,
                 dealerConfirmRequired: classification.needsConfirm,
                 selectedDealerCode: chosen.dealerCode ?? null,
-              });
+              }, state);
             }}
           >
             Confirm test ride →

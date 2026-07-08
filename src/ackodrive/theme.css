@@ -723,6 +723,69 @@ html.ad-embed[data-app="driver"] .ad-driver-splash-hero-content {
   color: var(--ad-text-primary);
 }
 
+.ad-modal-panel-wide {
+  max-width: 920px;
+}
+
+.ad-stat-grid-modal {
+  margin-bottom: 20px;
+}
+
+@media (min-width: 640px) {
+  .ad-stat-grid-modal {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ad-stat-grid-modal {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.ad-dealer-leads-table th:nth-child(1),
+.ad-dealer-leads-table td:nth-child(1) {
+  width: 40px;
+  text-align: center;
+}
+
+.ad-dealer-leads-table th:last-child,
+.ad-dealer-leads-table td:last-child {
+  text-align: center;
+}
+
+.ad-dealer-leads-status-select {
+  min-width: 140px;
+  max-width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--ad-border-default);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface-white);
+  font-size: 12px;
+  color: var(--ad-text-primary);
+  cursor: pointer;
+}
+
+.ad-dealer-leads-delete-btn {
+  padding: 6px 10px;
+  border: 1px solid var(--ad-border-default);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface-light);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ad-status-error, #c62828);
+  cursor: pointer;
+}
+
+.ad-dealer-leads-delete-btn:hover:not(:disabled) {
+  background: #ffebee;
+}
+
+.ad-dealer-leads-delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Headers */
 .ad-header-dark {
   position: sticky;
@@ -3341,6 +3404,86 @@ html.ad-embed .ad-cars-grid {
     font-size: 14px;
     white-space: normal;
   }
+}
+
+/* OEM pipeline — leads grouped and sorted by creation date/time */
+.ad-lead-date-stack {
+  margin-top: 12px;
+}
+
+.ad-lead-date-stack:first-of-type {
+  margin-top: 0;
+}
+
+.ad-lead-date-section-stacked {
+  margin-bottom: 8px;
+  padding-top: 4px;
+}
+
+.ad-lead-date-stack + .ad-lead-date-stack {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ad-border-default);
+}
+
+/* Lead summary card — propensity top-right */
+.ad-lead-summary {
+  position: relative;
+  padding-right: 76px;
+}
+
+.ad-lead-summary-propensity-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: var(--ad-radius-lg);
+  text-align: center;
+}
+
+.ad-lead-summary-booked {
+  margin-top: 4px;
+}
+
+.ad-lead-summary-name {
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.ad-lead-summary-propensity-tag-high {
+  background: #dcfce7;
+}
+
+.ad-lead-summary-propensity-tag-low {
+  background: #fef3c7;
+}
+
+.ad-lead-summary-propensity-score {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.2px;
+  color: var(--ad-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ad-lead-summary-propensity-label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.ad-lead-summary-propensity-tag-high .ad-lead-summary-propensity-label {
+  color: #15803d;
+}
+
+.ad-lead-summary-propensity-tag-low .ad-lead-summary-propensity-label {
+  color: #b45309;
 }
 
 /* Lead list stack on mobile */

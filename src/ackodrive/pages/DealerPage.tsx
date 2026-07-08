@@ -3,15 +3,18 @@ import { PortalShell, RequireAuth, TurnBanner } from "../components/PortalShell"
 import { FlowStepper } from "../components/FlowStepper";
 import { CaseList } from "../components/CaseList";
 import { TestRideReminder } from "../components/TestRideReminder";
+import { DealerProfileCard } from "../components/DealerProfileCard";
+import { DealerLeadsModal } from "../components/DealerLeadsModal";
+import { LeadSummaryContent } from "../components/LeadSummaryContent";
 import { Badge, Card, PrimaryButton, SecondaryButton, TabButton } from "../components/ui";
-import { DEALER, MODELS, BRAND_MODELS, TIME_SLOTS } from "../constants";
+import { MODELS, BRAND_MODELS, TIME_SLOTS } from "../constants";
 import { useCases } from "../hooks/useCases";
 import { useDemoState } from "../hooks/useDemoState";
 import { useLeads, hasOpenLeads } from "../hooks/useLeads";
 import type { DemoState } from "../types";
 import { generateAltOptions, getNextActor, isBookingConfirmed, toggleDriverSlotTime } from "../workflow";
 import { allotDriverToRide, closeLeadAsCompleted, deleteAllLeadsAndResetDemo, rejectLead } from "../workflowActions";
-import { propensityScore, propensityLabel } from "../leadPipeline";
+import { resolveLeadDisplay } from "../leadDisplay";
 import { LOGIN_EPOCH_KEY } from "../auth";
 
 export function DealerPage() {
@@ -30,6 +33,7 @@ function DealerContent() {
   const { leads, loading: leadsLoading, refresh: refreshLeads } = useLeads();
   const [tab, setTab] = useState<"live" | "history">("live");
   const [clearingLeads, setClearingLeads] = useState(false);
+  const [leadsModalOpen, setLeadsModalOpen] = useState(false);
 
   if (!loaded) return <div className="ad-caption p-8 text-center">Loading…</div>;
 
@@ -63,6 +67,8 @@ function DealerContent() {
 
   return (
     <>
+      <DealerProfileCard onViewLeads={() => setLeadsModalOpen(true)} />
+
       <div className="mb-3 flex flex-wrap gap-2">
         {(["live", "history"] as const).map((t) => (
           <TabButton key={t} active={tab === t} onClick={() => setTab(t)} className="flex-1 sm:flex-none">
@@ -100,35 +106,42 @@ function DealerContent() {
               </Card>
             )}
 
-            {state.leadSent && (() => {
+            {state.leadSent && state.leadId && (() => {
               const loginEpoch = Number(sessionStorage.getItem(LOGIN_EPOCH_KEY) ?? "0");
-              const score = propensityScore(state.customerPhoneRaw ?? "", loginEpoch);
-              const label = propensityLabel(score);
+              const leadRecord = leads.find((l) => l.id === state.leadId);
+              const display = resolveLeadDisplay(
+                leadRecord ?? {
+                  id: state.leadId,
+                  name: state.customerName,
+                  phone: state.customerPhoneRaw ?? state.customerPhone,
+                  address: state.customerAddress,
+                  pincode: state.pincode,
+                  model_id: state.model,
+                  model_name: `${model?.name ?? state.model ?? "—"} · ${state.variant ?? "—"}`,
+                  status: "new",
+                  source: "customer_app",
+                  created_at: new Date().toISOString(),
+                },
+                state,
+                loginEpoch,
+              );
               return (
               <Card>
-                <Badge tone="info">Acko ML · {state.qualification}</Badge>
-                <div className="ad-label mt-2 text-base">{state.customerName}</div>
-                <div className="ad-caption">📍 Pincode {state.pincode}</div>
-                <div className="text-xs">
-                  {model?.name} · {state.variant}
-                </div>
-                <div className="ad-caption mt-0.5 flex items-center gap-1.5">
-                  <span>Propensity score: {score.toFixed(1)}</span>
-                  <span className={score >= 3 ? "ad-propensity-high" : "ad-propensity-low"}>{label}</span>
-                </div>
-                {state.chosenSlot?.driverName && (
-                  <div className="ad-caption mt-1">Requested driver: {state.chosenSlot.driverName}</div>
-                )}
-                {!state.dealerAccepted && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <PrimaryButton onClick={() => void setState({ dealerAccepted: true }, "Dealer accepted lead")}>
-                      Accept lead
-                    </PrimaryButton>
-                    <SecondaryButton onClick={() => void rejectLead(setState, state)} className="!w-full">
-                      Reject lead
-                    </SecondaryButton>
-                  </div>
-                )}
+                <LeadSummaryContent
+                  display={display}
+                  actions={
+                    !state.dealerAccepted ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <PrimaryButton onClick={() => void setState({ dealerAccepted: true }, "Dealer accepted lead")}>
+                          Accept lead
+                        </PrimaryButton>
+                        <SecondaryButton onClick={() => void rejectLead(setState, state)} className="!w-full">
+                          Reject lead
+                        </SecondaryButton>
+                      </div>
+                    ) : undefined
+                  }
+                />
               </Card>
               );
             })()}
@@ -189,11 +202,6 @@ function DealerContent() {
 
           <div>
             <FlowStepper state={state} />
-            <Card className="mt-4">
-              <div className="ad-overline">Dealer profile</div>
-              <div className="ad-label mt-1 text-sm">{DEALER.name}</div>
-              <div className="ad-caption">{DEALER.addr}</div>
-            </Card>
             <Card>
               <div className="ad-overline">Driver roster &amp; slot availability</div>
               <p className="ad-caption mt-1 text-[11px]">
@@ -241,6 +249,15 @@ function DealerContent() {
       )}
 
       {tab === "history" && <CaseList cases={cases} />}
+
+      <DealerLeadsModal
+        open={leadsModalOpen}
+        onClose={() => setLeadsModalOpen(false)}
+        leads={leads}
+        demoState={state}
+        setState={setState}
+        onRefresh={refreshLeads}
+      />
     </>
   );
 }

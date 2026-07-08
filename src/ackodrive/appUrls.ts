@@ -112,6 +112,12 @@ export function getOemDataSheetLoginUrl(): string {
   return isGitHubPagesDeploy() ? `${admin}#/login/oem` : `${admin}/login/oem`;
 }
 
+/** Direct URL to the OEM Control Room (requires sign-in). */
+export function getOemControlRoomUrl(): string {
+  const admin = getAppUrls().admin.replace(/\/$/, "");
+  return isGitHubPagesDeploy() ? `${admin}#/master` : `${admin}/master`;
+}
+
 /** Direct URL to the OEM Data Sheet dashboard (requires sign-in). */
 export function getOemDataSheetUrl(): string {
   const admin = getAppUrls().admin.replace(/\/$/, "");

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AdminNotificationCenter } from "../../ackodrive/components/AdminNotificationCenter";
 import { PortalGrid } from "../../ackodrive/components/PortalGrid";
 import { useAdminDemoBootstrap } from "../../ackodrive/hooks/useAdminDemoBootstrap";
@@ -6,11 +6,11 @@ import { useAdminNotificationFeed } from "../../ackodrive/hooks/useAdminNotifica
 import { useSlaWatchdog } from "../../ackodrive/hooks/useSlaWatchdog";
 import { clearPortalGate, getPortalGateUser } from "../../ackodrive/portalGate";
 import { clearSession, formatIndianMobile } from "../../ackodrive/auth";
-import { redirectToAppRoute } from "../../ackodrive/appUrls";
 
 export function AdminConsolePage() {
   const gateUser = getPortalGateUser();
   const feed = useAdminNotificationFeed();
+  const navigate = useNavigate();
 
   useSlaWatchdog();
   useAdminDemoBootstrap(feed.push);
@@ -20,7 +20,7 @@ export function AdminConsolePage() {
   const handleSignOut = () => {
     clearPortalGate();
     clearSession();
-    redirectToAppRoute("/login");
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -42,9 +42,6 @@ export function AdminConsolePage() {
               onDismiss={feed.dismiss}
               onClearAll={feed.clearAll}
             />
-            <Link to="/presenter" className="ad-btn-primary !w-auto !text-sm">
-              Presenter kit
-            </Link>
             <button type="button" onClick={handleSignOut} className="ad-btn-ghost text-sm">
               Sign out
             </button>

@@ -1,6 +1,5 @@
 import type { DemoState } from "./types";
 import {
-  buildOemInitiatePatch,
   buildCustomerLeadPatch,
   appendPrivacyAudit,
   deriveStaticOtp,
@@ -11,19 +10,48 @@ import {
   INITIAL_DRIVER_ROSTER,
   maskPhone,
 } from "./workflow";
-import { updateLeadStatus, deleteAllLeads } from "./hooks/useLeads";
+import { updateLeadStatus, deleteAllLeads, insertLead, markLeadSlotBooked, updateLeadAfterRideComplete, updateLeadQualification } from "./hooks/useLeads";
 import { insertCase } from "./hooks/useCases";
 import { resetSharedDemoState, patchSharedDemoState } from "./hooks/demoStateStore";
-import type { Lead } from "./types";
-import { EN_ROUTE_SLA_MS, SLOT_HOLD_MS, DEALER, MODELS, BRAND_MODELS } from "./constants";
+import type { Lead, Qualification } from "./types";
+import { EN_ROUTE_SLA_MS, SLOT_HOLD_MS, DEALER, MODELS, BRAND_MODELS, CAR_BRANDS } from "./constants";
 import { clearCustomerSessionPrefs, getCustomerIntent, type CustomerIntent } from "./customerIntent";
+import { computePropensityFromQualification } from "./oemAnalytics";
+import { propensityScore } from "./leadPipeline";
 
 export type SetStateFn = (patch: Partial<DemoState>, logMessage?: string) => Promise<void>;
 
-function qualificationForIntent(intent: CustomerIntent | null): DemoState["qualification"] {
-  if (intent === "purchase") return "qualified";
-  if (intent === "testride") return "undecided";
-  return null;
+const SHIVI_SESSION_RESET: Partial<DemoState> = {
+  qualification: null,
+  propensity: null,
+  shiviCallInitiated: false,
+  shiviCallPlaced: false,
+  shiviCallAnswered: false,
+  shiviCallRejected: false,
+  mlFlagged: false,
+};
+
+function buildShiviInitiatePatch(state: DemoState, lead: Lead): Partial<DemoState> {
+  const variantPart = lead.model_name?.includes("·")
+    ? lead.model_name.split("·").pop()?.trim()
+    : state.variant;
+  return {
+    leadId: lead.id,
+    customerName: lead.name,
+    customerPhone: maskPhone(lead.phone),
+    customerPhoneRaw: lead.phone,
+    customerAddress: lead.address ?? state.customerAddress ?? "—",
+    pincode: lead.pincode ?? state.pincode,
+    model: lead.model_id ?? state.model,
+    variant: variantPart ?? state.variant,
+    shiviCallInitiated: true,
+    shiviCallPlaced: true,
+    shiviCallAnswered: false,
+    shiviCallRejected: false,
+    mlFlagged: true,
+    qualification: null,
+    propensity: null,
+  };
 }
 
 export async function startCustomerJourney(
@@ -43,9 +71,13 @@ export async function startCustomerJourney(
       pincode: lead.pincode ?? currentState.pincode,
       model: lead.model_id,
       variant: lead.variant ?? currentState.variant,
+      leadSent: false,
+      chosenSlot: null,
+      bookingDate: null,
+      dealerAccepted: false,
+      ...SHIVI_SESSION_RESET,
     };
     if (intent === "testride") {
-      patch.qualification = currentState.qualification ?? "undecided";
       patch.testrideAccepted = true;
     } else if (intent === "purchase") {
       patch.qualification = "qualified";
@@ -70,7 +102,6 @@ export async function startCustomerJourney(
     if (variantPart) patch.variant = variantPart;
   }
   if (intent === "testride") {
-    patch.qualification = "undecided";
     patch.testrideAccepted = true;
   } else if (intent === "purchase") {
     patch.qualification = "qualified";
@@ -83,42 +114,120 @@ export async function initiateShiviCallFromOem(
   state: DemoState,
   lead: Lead,
 ): Promise<void> {
-  if (state.leadId === lead.id && state.customerName) {
+  await setState(
+    buildShiviInitiatePatch(state, lead),
+    `OEM initiated Shivi call → ${lead.name}`,
+  );
+  await updateLeadStatus(lead.id, "contacted");
+}
+
+export async function completeRideWithOtp(setState: SetStateFn, state: DemoState): Promise<void> {
+  const qualification: Qualification = state.qualification ?? "undecided";
+  const phone = state.customerPhoneRaw ?? "";
+  const propensity =
+    state.propensity ??
+    (state.qualification
+      ? computePropensityFromQualification(state.qualification)
+      : propensityScore(phone, 0));
+
+  if (state.leadId) {
+    await updateLeadAfterRideComplete(state.leadId, qualification);
+  }
+
+  await setState(
+    {
+      rideComplete: true,
+      qualification: state.qualification ?? qualification,
+      propensity,
+    },
+    "Driver closed ride with correct OTP",
+  );
+}
+
+export async function persistLeadQualification(
+  leadId: string,
+  qualification: Qualification,
+  setState?: SetStateFn,
+  activeLeadId?: string | null,
+): Promise<void> {
+  await updateLeadQualification(leadId, qualification);
+  if (setState && activeLeadId === leadId) {
     await setState(
       {
-        shiviCallInitiated: true,
-        shiviCallPlaced: true,
-        shiviCallAnswered: false,
-        shiviCallRejected: false,
-        mlFlagged: true,
+        qualification,
+        propensity: computePropensityFromQualification(qualification),
       },
-      `OEM initiated Shivi call → ${lead.name}`,
+      `Lead status → ${qualification}`,
     );
-  } else {
-    const patch = buildOemInitiatePatch(lead);
-    await setState(patch, `OEM initiated Shivi call → ${lead.name}`);
   }
-  await updateLeadStatus(lead.id, "contacted");
+}
+
+async function ensureLeadInPipelineAfterSlotBooking(
+  setState: SetStateFn,
+  state: DemoState,
+): Promise<string | null> {
+  if (state.leadId) {
+    await markLeadSlotBooked(state.leadId);
+    return state.leadId;
+  }
+
+  const phone = state.customerPhoneRaw;
+  const name = state.customerName;
+  const modelId = state.model;
+  if (!phone || !name || !modelId) return null;
+
+  const catalogModel = BRAND_MODELS.find((m) => m.id === modelId);
+  const brand = CAR_BRANDS.find((b) => b.id === catalogModel?.brandId);
+  const fallbackModel = MODELS.find((m) => m.id === modelId);
+  const modelLabel = catalogModel?.name ?? fallbackModel?.name ?? modelId;
+  const brandName = brand?.name ?? "Tata";
+  const variant = state.variant ?? catalogModel?.variants[0] ?? "";
+
+  const { data: inserted } = await insertLead({
+    name,
+    phone,
+    address: state.customerAddress && state.customerAddress !== "—" ? state.customerAddress : null,
+    pincode: state.pincode ?? "560034",
+    model_id: modelId,
+    model_name: `${brandName} ${modelLabel}${variant ? ` · ${variant}` : ""}`,
+    source: "customer_app",
+    status: "new",
+  });
+
+  if (!inserted) return null;
+
+  await setState({ leadId: inserted.id }, `Lead created after slot booking — ${name}`);
+  return inserted.id;
 }
 
 export async function bookDriverTiedSlot(
   setState: SetStateFn,
   slot: DemoState["chosenSlot"],
   extras: Pick<DemoState, "bookingDate" | "dateClass" | "dealerConfirmRequired" | "selectedDealerCode">,
+  state: DemoState,
 ): Promise<void> {
   if (!slot) return;
+  const bookedAt = Date.now();
   await setState(
     {
       chosenSlot: slot,
-      bookingDate: extras.bookingDate,
+      bookingDate: bookedAt,
       dateClass: extras.dateClass,
       dealerConfirmRequired: extras.dealerConfirmRequired,
       selectedDealerCode: extras.selectedDealerCode,
       leadSent: true,
-      slotHoldExpiresAt: Date.now() + SLOT_HOLD_MS,
+      slotHoldExpiresAt: bookedAt + SLOT_HOLD_MS,
+      dealerAccepted: false,
+      ...SHIVI_SESSION_RESET,
     },
     `Customer booked ${slot.label} · ${slot.time}`,
   );
+  await ensureLeadInPipelineAfterSlotBooking(setState, {
+    ...state,
+    leadSent: true,
+    chosenSlot: slot,
+    bookingDate: bookedAt,
+  });
 }
 
 export async function allotDriverToRide(
@@ -181,12 +290,8 @@ export async function customerPickShiviCall(setState: SetStateFn, state?: DemoSt
   };
   if (!state?.qualification) {
     const intent = getCustomerIntent() ?? "testride";
-    const qualification = qualificationForIntent(intent);
-    if (qualification) {
-      patch.qualification = qualification;
-      if (intent === "testride") {
-        patch.testrideAccepted = true;
-      }
+    if (intent === "purchase") {
+      patch.qualification = "qualified";
     }
   }
   clearCustomerSessionPrefs();

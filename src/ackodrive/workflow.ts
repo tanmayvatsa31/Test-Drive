@@ -147,6 +147,15 @@ export function shouldShowIncomingShiviCallScreen(state: DemoState): boolean {
   );
 }
 
+/** Shivi qualification — after customer accepts or rejects the call. */
+export function shouldShowQualificationCard(state: DemoState): boolean {
+  return (
+    state.shiviCallInitiated &&
+    (state.shiviCallAnswered || state.shiviCallRejected) &&
+    !state.qualification
+  );
+}
+
 /** Full-screen incoming masked call — before driver assigned content. */
 export function shouldShowIncomingDriverCallScreen(state: DemoState): boolean {
   if (!shouldShowDriverAssignedScreen(state)) return false;

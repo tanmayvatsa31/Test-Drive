@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../supabase";
-import type { Lead } from "../types";
+import type { Lead, Qualification } from "../types";
+import { upsertQualInSource } from "../leadIntentStatus";
 
 export function useLeads() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -24,7 +25,16 @@ export function useLeads() {
         void refresh();
       })
       .subscribe();
+
+    const poll = setInterval(() => void refresh(), 5000);
+    const onVisible = () => {
+      if (!document.hidden) void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVisible);
       void supabase.removeChannel(channel);
     };
   }, [refresh]);
@@ -42,7 +52,7 @@ export async function findOpenLeadForCustomer(phone: string, modelId: string): P
   const { data } = await supabase
     .from("leads")
     .select("*")
-    .in("status", ["new", "contacted"])
+    .in("status", ["new", "contacted", "pending_slot"])
     .eq("model_id", modelId)
     .order("created_at", { ascending: false })
     .limit(25);
@@ -50,7 +60,10 @@ export async function findOpenLeadForCustomer(phone: string, modelId: string): P
   if (!data?.length) return null;
 
   return (
-    (data as Lead[]).find((lead) => lead.phone.replace(/\D/g, "").slice(-10) === digits) ?? null
+    (data as Lead[]).find((lead) => {
+      if (lead.phone.replace(/\D/g, "").slice(-10) !== digits) return false;
+      return !lead.source?.includes(":booked:");
+    }) ?? null
   );
 }
 
@@ -62,20 +75,66 @@ export async function insertLead(payload: {
   model_id: string;
   model_name: string;
   source?: string;
+  status?: string;
 }) {
   return supabase
     .from("leads")
     .insert({
       ...payload,
-      status: "new",
+      status: payload.status ?? "new",
       source: payload.source ?? "tata_web",
     })
     .select()
     .single();
 }
 
+/** Promote a pre-slot lead into the OEM pipeline once the customer picks a slot. */
+export async function markLeadSlotBooked(leadId: string) {
+  const bookedAt = new Date().toISOString();
+  const { error } = await supabase
+    .from("leads")
+    .update({
+      status: "new",
+      source: `customer_app:booked:${bookedAt}`,
+    })
+    .eq("id", leadId);
+
+  if (error) {
+    console.warn("[leads] markLeadSlotBooked failed:", error.message);
+    return supabase.from("leads").update({ status: "new" }).eq("id", leadId);
+  }
+
+  return { error: null };
+}
+
 export async function updateLeadStatus(id: string, status: string) {
   return supabase.from("leads").update({ status }).eq("id", id);
+}
+
+/** Persist Shivi / dealer intent on the lead row (encoded in source). */
+export async function updateLeadQualification(id: string, qualification: Qualification) {
+  const { data } = await supabase.from("leads").select("source").eq("id", id).single();
+  const source = upsertQualInSource((data as Lead | null)?.source ?? "customer_app", qualification);
+  return supabase.from("leads").update({ source }).eq("id", id);
+}
+
+/** Called when the driver closes the live job card with OTP. */
+export async function updateLeadAfterRideComplete(id: string, qualification: Qualification) {
+  const { data } = await supabase.from("leads").select("source").eq("id", id).single();
+  const source = upsertQualInSource(
+    (data as Lead | null)?.source ?? "customer_app",
+    qualification,
+    new Date().toISOString(),
+  );
+  const { error } = await supabase.from("leads").update({ status: "completed", source }).eq("id", id);
+  if (error) {
+    console.warn("[leads] updateLeadAfterRideComplete failed:", error.message);
+  }
+  return { error };
+}
+
+export async function deleteLead(id: string) {
+  return supabase.from("leads").delete().eq("id", id);
 }
 
 export async function deleteAllLeads() {
